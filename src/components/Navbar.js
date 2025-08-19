@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -23,11 +23,17 @@ const Logo = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const LogoIcon = styled.img`
   width: 32px;
-  height: 24px;
+  height: 20px;
   border-radius: 0;
 `;
 
@@ -99,6 +105,7 @@ const UserButton = styled.button`
 
 function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -109,9 +116,13 @@ function Navbar() {
     }
   };
 
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
   return (
     <Nav>
-      <Logo>
+      <Logo onClick={handleLogoClick}>
         <LogoIcon src="/assets/logo.png" alt="Vibesona" />
         Vibesona
       </Logo>
