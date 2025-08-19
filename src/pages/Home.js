@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import SpotifyService from '../services/spotify';
 
 const HomeContainer = styled.div`
   min-height: 100vh;
@@ -37,7 +38,7 @@ const HeroSection = styled(motion.div)`
 const LargeLogo = styled(motion.img)`
   width: 120px;
   height: 120px;
-  border-radius: 50%;
+  border-radius: 0;
   margin: 0 auto 2rem;
   display: block;
 `;
@@ -164,15 +165,23 @@ const Input = styled.input`
 const LoadButton = styled.button`
   background: linear-gradient(45deg, #667eea, #764ba2);
   color: white;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
   
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
@@ -213,6 +222,38 @@ const CardDescription = styled.p`
 `;
 
 function Home() {
+  const [songUrl, setSongUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [trackInfo, setTrackInfo] = useState(null);
+
+  const handleLoadTrack = async () => {
+    if (!songUrl.trim()) {
+      setError('Please enter a song URL');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setTrackInfo(null);
+
+    try {
+      const trackData = await SpotifyService.getTrackInfo(songUrl);
+      setTrackInfo(trackData);
+    } catch (err) {
+      setError('Failed to load track. Please check the URL and try again.');
+      console.error('Track loading error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDuration = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   return (
     <HomeContainer>
       <BackgroundPattern />
@@ -255,9 +296,52 @@ function Home() {
           <Input 
             type="text" 
             placeholder="Paste your Spotify song URL here..." 
+            value={songUrl}
+            onChange={(e) => setSongUrl(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleLoadTrack()}
           />
-          <LoadButton>Load Track</LoadButton>
+          <LoadButton 
+            onClick={handleLoadTrack}
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Load Track'}
+          </LoadButton>
         </SubmitForm>
+
+        {error && (
+          <div style={{ color: '#ff6b6b', marginTop: '1rem', fontSize: '0.9rem' }}>
+            {error}
+          </div>
+        )}
+
+        {trackInfo && (
+          <div style={{ 
+            marginTop: '2rem', 
+            padding: '1rem', 
+            background: 'rgba(255, 255, 255, 0.1)', 
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <img 
+              src={trackInfo.album?.images?.[0]?.url} 
+              alt={trackInfo.name}
+              style={{ width: '80px', height: '80px', borderRadius: '8px' }}
+            />
+            <div>
+              <div style={{ fontWeight: '600', color: 'white', marginBottom: '0.25rem' }}>
+                {trackInfo.name}
+              </div>
+              <div style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '0.5rem' }}>
+                {trackInfo.artists?.map(a => a.name).join(', ')}
+              </div>
+              <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                Popularity: {trackInfo.popularity}/100 • Duration: {formatDuration(trackInfo.duration_ms)}
+              </div>
+            </div>
+          </div>
+        )}
       </SubmitSection>
 
       <FeatureCards

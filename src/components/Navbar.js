@@ -28,7 +28,7 @@ const Logo = styled.div`
 const LogoIcon = styled.img`
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 0;
 `;
 
 const NavLinks = styled.div`
