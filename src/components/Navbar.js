@@ -27,7 +27,7 @@ const Logo = styled.div`
 
 const LogoIcon = styled.img`
   width: 32px;
-  height: 32px;
+  height: 24px;
   border-radius: 0;
 `;
 

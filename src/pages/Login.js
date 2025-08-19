@@ -35,7 +35,7 @@ const BrandSection = styled(motion.div)`
 
 const LargeLogo = styled(motion.img)`
   width: 120px;
-  height: 120px;
+  height: 90px;
   border-radius: 0;
   margin: 0 auto 2rem;
   display: block;
