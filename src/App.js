@@ -9,6 +9,7 @@ import Studio from './pages/Studio';
 import Submissions from './pages/Submissions';
 import Tokens from './pages/Tokens';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import { GlobalStyles } from './styles/GlobalStyles';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route path="/submissions" element={<Submissions />} />
             <Route path="/tokens" element={<Tokens />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
           </Routes>
         </div>
       </Router>

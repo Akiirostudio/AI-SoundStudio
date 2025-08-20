@@ -272,7 +272,7 @@ function Home() {
         />
         <MainTitle>Intelligent creation. Verified growth.</MainTitle>
         <Subtitle>
-          Analyze playlists for authenticity, craft tracks in a sleek studio, and submit to curated lists — all in one seamless, next-gen experience.
+          Analyze playlists for authenticity, craft tracks in a sleek studio, and submit to curated lists. All in one seamless, next-gen experience.
         </Subtitle>
       </HeroSection>
 
