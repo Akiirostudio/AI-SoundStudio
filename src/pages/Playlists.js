@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { FaSearch, FaMusic, FaUsers, FaClock, FaCheck, FaTimes, FaEye, FaExternalLinkAlt, FaFilter } from 'react-icons/fa';
 import ReactDOM from 'react-dom';
 import SpotifyService from '../services/spotify';
+import userDataService from '../services/userData';
+import { useAuth } from '../contexts/AuthContext';
 
 const PlaylistsContainer = styled.div`
   min-height: 100vh;
@@ -394,6 +396,7 @@ const StatLabel = styled.div`
 `;
 
 function Playlists() {
+  const { currentUser } = useAuth();
   const [selectedGenre, setSelectedGenre] = useState('Pop');
   const [playlists, setPlaylists] = useState([]);
   const [searchingPlaylists, setSearchingPlaylists] = useState(false);
@@ -401,56 +404,31 @@ function Playlists() {
   const [submissions, setSubmissions] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
 
   const genres = ['Pop', 'Rock', 'Hip Hop', 'Electronic', 'Jazz', 'Classical', 'Country', 'R&B', 'Indie', 'Metal', 'Alternative', 'Folk', 'Blues', 'Reggae', 'Latin', 'K-Pop'];
 
-  // Sample submissions data (in real app, this would come from your backend)
-  const sampleSubmissions = [
-    {
-      id: 1,
-      trackName: 'Midnight Dreams',
-      artist: 'Luna Echo',
-      playlistName: 'Chill Vibes Only',
-      playlistOwner: 'Spotify',
-      status: 'live',
-      submittedAt: '2024-01-15',
-      coverImage: 'https://via.placeholder.com/50x50/667eea/ffffff?text=MD'
-    },
-    {
-      id: 2,
-      trackName: 'Electric Soul',
-      artist: 'Neon Pulse',
-      playlistName: 'Electronic Beats',
-      playlistOwner: 'Music Curator',
-      status: 'accepted',
-      submittedAt: '2024-01-10',
-      coverImage: 'https://via.placeholder.com/50x50/764ba2/ffffff?text=ES'
-    },
-    {
-      id: 3,
-      trackName: 'Urban Flow',
-      artist: 'Street Sound',
-      playlistName: 'Hip Hop Essentials',
-      playlistOwner: 'Hip Hop Central',
-      status: 'submitted',
-      submittedAt: '2024-01-12',
-      coverImage: 'https://via.placeholder.com/50x50/51cf66/ffffff?text=UF'
-    },
-    {
-      id: 4,
-      trackName: 'Acoustic Memories',
-      artist: 'Folk Tales',
-      playlistName: 'Indie Discoveries',
-      playlistOwner: 'Indie Music',
-      status: 'rejected',
-      submittedAt: '2024-01-08',
-      coverImage: 'https://via.placeholder.com/50x50/ff6b6b/ffffff?text=AM'
-    }
-  ];
-
+  // Load user's submissions from Firestore
   useEffect(() => {
-    setSubmissions(sampleSubmissions);
-  }, []);
+    const loadUserSubmissions = async () => {
+      if (currentUser) {
+        setLoadingSubmissions(true);
+        try {
+          const userSubmissions = await userDataService.getUserSubmissions(currentUser.uid);
+          setSubmissions(userSubmissions || []);
+        } catch (error) {
+          console.error('Error loading submissions:', error);
+          setSubmissions([]); // Set empty array as fallback
+        } finally {
+          setLoadingSubmissions(false);
+        }
+      } else {
+        setSubmissions([]); // No user, no submissions
+      }
+    };
+
+    loadUserSubmissions();
+  }, [currentUser]);
 
   // Update dropdown position when scrolling
   useEffect(() => {
@@ -525,20 +503,50 @@ function Playlists() {
   };
 
   const handleSubmitToPlaylist = async (playlist) => {
+    if (!currentUser) {
+      alert('Please log in to submit to playlists');
+      return;
+    }
+
     // In a real app, this would submit to your backend
-    const newSubmission = {
-      id: Date.now(),
+    const submissionData = {
       trackName: 'Your Track Name', // This would come from the current track
-      artist: 'Your Artist Name',
+      trackArtist: 'Your Artist Name',
       playlistName: playlist.name,
       playlistOwner: playlist.owner,
-      status: 'submitted',
-      submittedAt: new Date().toISOString().split('T')[0],
-      coverImage: playlist.images?.[0]?.url || 'https://via.placeholder.com/50x50/667eea/ffffff?text=PL'
+      playlistFollowers: playlist.followers,
+      playlistId: playlist.id,
+      playlistImage: playlist.images?.[0]?.url,
+      trackImage: 'https://via.placeholder.com/50x50/667eea/ffffff?text=PL',
+      status: 'submitted'
     };
 
-    setSubmissions(prev => [newSubmission, ...prev]);
-    setShowPlaylistDropdown(false);
+    try {
+      // Save to Firestore
+      const result = await userDataService.savePlaylistSubmission(currentUser.uid, submissionData);
+      
+      // Update local state
+      const newSubmission = {
+        id: result.submissionId,
+        ...submissionData,
+        submittedAt: new Date()
+      };
+
+      setSubmissions(prev => [newSubmission, ...prev]);
+      
+      // Update user stats
+      const currentStats = await userDataService.getUserStats(currentUser.uid);
+      await userDataService.updateUserStats(currentUser.uid, {
+        ...currentStats,
+        totalSubmissions: currentStats.totalSubmissions + 1
+      });
+      
+      setShowPlaylistDropdown(false);
+      alert(`Successfully submitted to ${playlist.name}!`);
+    } catch (error) {
+      console.error('Error submitting to playlist:', error);
+      alert('Failed to submit to playlist. Please try again.');
+    }
   };
 
   const getStatusIcon = (status) => {
@@ -742,7 +750,11 @@ function Playlists() {
           </FilterSection>
 
           <SubmissionsList>
-            {filteredSubmissions.length > 0 ? (
+            {loadingSubmissions ? (
+              <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)', padding: '2rem' }}>
+                Loading submissions...
+              </div>
+            ) : filteredSubmissions.length > 0 ? (
               filteredSubmissions.map((submission) => (
                 <SubmissionItem key={submission.id}>
                   <TrackImage src={submission.coverImage} alt={submission.trackName} />

@@ -214,6 +214,12 @@ class SpotifyService {
       const detailedPlaylists = await Promise.all(
         playlists.map(async (playlist) => {
           try {
+            // Skip if playlist is null or missing ID
+            if (!playlist || !playlist.id) {
+              console.log('Skipping null or invalid playlist:', playlist);
+              return null;
+            }
+
             const playlistResponse = await fetch(
               `https://api.spotify.com/v1/playlists/${playlist.id}`,
               {
@@ -246,15 +252,23 @@ class SpotifyService {
         })
       );
 
-      // Filter out null results, filter for 10k+ followers, and sort by follower count
-      const validPlaylists = detailedPlaylists
-        .filter(playlist => playlist !== null && playlist.followers >= 10000)
-        .sort((a, b) => b.followers - a.followers)
-        .slice(0, limit);
+      // Filter out null results and ensure we have valid playlists
+      const validPlaylists = detailedPlaylists.filter(playlist => 
+        playlist !== null && 
+        playlist.id && 
+        playlist.followers >= 10000
+      );
 
-      // If we don't have enough high-follower playlists, get more results
-      if (validPlaylists.length < limit) {
-        // Try a broader search to get more results
+      // Sort by follower count (highest first) and take top 10
+      const topPlaylists = validPlaylists
+        .sort((a, b) => b.followers - a.followers)
+        .slice(0, 10);
+
+      console.log(`Found ${topPlaylists.length} valid playlists with 10k+ followers`);
+      
+      // If we don't have enough playlists, try a broader search
+      if (topPlaylists.length < 10) {
+        console.log('Not enough playlists found, trying broader search...');
         const broaderResponse = await fetch(
           `https://api.spotify.com/v1/search?q=${searchQuery}%20playlist&type=playlist&limit=50&market=US`,
           {
@@ -272,6 +286,10 @@ class SpotifyService {
           const additionalPlaylists = await Promise.all(
             broaderPlaylists.slice(0, 20).map(async (playlist) => {
               try {
+                if (!playlist || !playlist.id) {
+                  return null;
+                }
+
                 const playlistResponse = await fetch(
                   `https://api.spotify.com/v1/playlists/${playlist.id}`,
                   {
@@ -304,16 +322,17 @@ class SpotifyService {
           );
 
           // Combine and filter results
-          const allPlaylists = [...validPlaylists, ...additionalPlaylists]
+          const allPlaylists = [...topPlaylists, ...additionalPlaylists]
             .filter(playlist => playlist !== null && playlist.followers >= 10000)
             .sort((a, b) => b.followers - a.followers)
-            .slice(0, limit);
+            .slice(0, 10);
 
+          console.log(`After broader search: Found ${allPlaylists.length} valid playlists`);
           return allPlaylists;
         }
       }
-
-      return validPlaylists;
+      
+      return topPlaylists;
     } catch (error) {
       console.error('Error searching playlists:', error);
       throw error;

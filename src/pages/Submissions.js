@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FaMusic, FaUpload, FaSearch, FaUsers, FaPlay, FaExternalLinkAlt } from 'react-icons/fa';
 import ReactDOM from 'react-dom';
 import SpotifyService from '../services/spotify';
+import userDataService from '../services/userData';
+import { useAuth } from '../contexts/AuthContext';
 
 const SubmissionsContainer = styled.div`
   min-height: 100vh;
@@ -503,6 +505,7 @@ const SubmissionStatus = styled.div`
 `;
 
 function Submissions() {
+  const { currentUser } = useAuth();
   const [songUrl, setSongUrl] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('Pop');
   const [trackInfo, setTrackInfo] = useState(null);
@@ -513,10 +516,52 @@ function Submissions() {
   const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(false);
   const [submittingToPlaylist, setSubmittingToPlaylist] = useState(null);
   const [submissions, setSubmissions] = useState([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
+  // Load user's submissions from Firestore
+  useEffect(() => {
+    const loadUserSubmissions = async () => {
+      if (currentUser) {
+        setLoadingSubmissions(true);
+        try {
+          const userSubmissions = await userDataService.getUserSubmissions(currentUser.uid);
+          setSubmissions(userSubmissions || []);
+        } catch (error) {
+          console.error('Error loading submissions:', error);
+          if (error.code === 'permission-denied') {
+            setError('Permission denied. Please check your account status.');
+          } else if (error.code === 'unavailable') {
+            setError('Database unavailable. Please try again later.');
+          } else {
+            setError('Failed to load your submissions. Please try again.');
+          }
+          setSubmissions([]); // Set empty array as fallback
+        } finally {
+          setLoadingSubmissions(false);
+        }
+      } else {
+        setSubmissions([]); // No user, no submissions
+      }
+    };
+
+    loadUserSubmissions();
+  }, [currentUser]);
+
+  // Debug: Test Firestore connection on component mount
+  useEffect(() => {
+    const testFirestore = async () => {
+      if (currentUser) {
+        console.log('User authenticated:', currentUser.uid);
+        console.log('Firestore should be working for user data');
+      }
+    };
+
+    testFirestore();
+  }, [currentUser]);
+
   // Update dropdown position when scrolling
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
       if (showPlaylistDropdown) {
         const searchButton = document.getElementById('search-button');
@@ -639,37 +684,69 @@ function Submissions() {
       return;
     }
 
+    if (!currentUser) {
+      setError('Please log in to submit to playlists');
+      return;
+    }
+
     setSubmittingToPlaylist(playlist.id);
     setError('');
 
     try {
-      // Simulate submission process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In a real app, you would submit to the playlist here
-      console.log(`Submitting ${trackInfo.name} to playlist: ${playlist.name}`);
-      
-      // Add to submissions list
-      const newSubmission = {
-        id: Date.now(),
+      // Test write access first
+      const writeAccess = await userDataService.testUserWriteAccess(currentUser.uid);
+      if (!writeAccess) {
+        setError('Permission denied. Please check your account status.');
+        return;
+      }
+
+      // Prepare submission data
+      const submissionData = {
         trackName: trackInfo.name,
         trackArtist: trackInfo.artists?.map(a => a.name).join(', '),
         playlistName: playlist.name,
         playlistOwner: playlist.owner,
         playlistFollowers: playlist.followers,
-        submittedAt: new Date(),
-        status: 'submitted',
+        playlistId: playlist.id,
+        playlistImage: playlist.images?.[0]?.url,
         trackImage: trackInfo.album?.images?.[0]?.url,
-        playlistImage: playlist.images?.[0]?.url
+        trackId: trackInfo.id,
+        trackUrl: trackInfo.external_urls?.spotify,
+        status: 'submitted',
+        userEmail: currentUser.email,
+        userName: currentUser.displayName
+      };
+
+      // Save to Firestore
+      const result = await userDataService.savePlaylistSubmission(currentUser.uid, submissionData);
+      
+      // Update local state
+      const newSubmission = {
+        id: result.submissionId,
+        ...submissionData,
+        submittedAt: new Date()
       };
       
       setSubmissions(prev => [newSubmission, ...prev]);
       
+      // Update user stats
+      const currentStats = await userDataService.getUserStats(currentUser.uid);
+      await userDataService.updateUserStats(currentUser.uid, {
+        ...currentStats,
+        totalSubmissions: currentStats.totalSubmissions + 1
+      });
+      
       // Show success message
       alert(`Successfully submitted to ${playlist.name}!`);
     } catch (err) {
-      setError('Failed to submit to playlist. Please try again.');
       console.error('Submission error:', err);
+      if (err.code === 'permission-denied') {
+        setError('Permission denied. Please check your account status.');
+      } else if (err.code === 'unavailable') {
+        setError('Database unavailable. Please try again later.');
+      } else {
+        setError('Failed to submit to playlist. Please try again.');
+      }
     } finally {
       setSubmittingToPlaylist(null);
     }
@@ -899,7 +976,12 @@ function Submissions() {
           transition={{ duration: 0.8, delay: 0.6 }}
         >
           <CardTitle>Your Submissions</CardTitle>
-          {submissions.length > 0 ? (
+          {loadingSubmissions ? (
+            <EmptyState>
+              <LoadingSpinner />
+              Loading submissions...
+            </EmptyState>
+          ) : submissions.length > 0 ? (
             <div>
               {submissions.map((submission) => (
                 <SubmissionItem key={submission.id}>
