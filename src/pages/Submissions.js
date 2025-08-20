@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { FaMusic, FaUpload, FaSearch, FaUsers, FaPlay, FaExternalLinkAlt } from 'react-icons/fa';
+import ReactDOM from 'react-dom';
 import SpotifyService from '../services/spotify';
 
 const SubmissionsContainer = styled.div`
@@ -54,7 +55,6 @@ const DashboardGrid = styled.div`
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  z-index: 1;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -292,21 +292,21 @@ const LoadingSpinner = styled.div`
 const PlaylistSearchContainer = styled.div`
   margin-top: 1rem;
   position: relative;
+  z-index: 999999;
 `;
 
 const PlaylistDropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
+  position: fixed;
+  top: ${props => props.top}px;
+  left: ${props => props.left}px;
+  width: ${props => props.width}px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   max-height: 400px;
   overflow-y: auto;
-  z-index: 1000;
-  margin-top: 0.5rem;
+  z-index: 999999;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 `;
 
@@ -317,7 +317,7 @@ const PlaylistItem = styled.div`
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 
   &:last-child {
     border-bottom: none;
@@ -339,6 +339,7 @@ const PlaylistImage = styled.img`
 const PlaylistInfo = styled.div`
   flex: 1;
   min-width: 0;
+  margin-right: 1rem;
 `;
 
 const PlaylistName = styled.div`
@@ -357,6 +358,7 @@ const PlaylistDetails = styled.div`
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  margin-bottom: 0.25rem;
 `;
 
 const PlaylistStats = styled.div`
@@ -364,6 +366,8 @@ const PlaylistStats = styled.div`
   flex-direction: column;
   align-items: flex-end;
   gap: 0.25rem;
+  flex-shrink: 0;
+  margin-right: 1rem;
 `;
 
 const FollowerCount = styled.div`
@@ -390,6 +394,9 @@ const SubmitButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  flex-shrink: 0;
+  min-width: 80px;
+  justify-content: center;
 
   &:hover {
     transform: translateY(-1px);
@@ -416,6 +423,66 @@ const PlaylistOwner = styled.div`
   margin-top: 0.25rem;
 `;
 
+const SubmissionItem = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+const SubmissionInfo = styled.div`
+  flex: 1;
+`;
+
+const SubmissionTitle = styled.div`
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+`;
+
+const SubmissionDetails = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+`;
+
+const SubmissionStatus = styled.div`
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: ${props => {
+    switch (props.status) {
+      case 'submitted': return 'rgba(116, 192, 252, 0.2)';
+      case 'accepted': return 'rgba(81, 207, 102, 0.2)';
+      case 'rejected': return 'rgba(255, 107, 107, 0.2)';
+      default: return 'rgba(255, 212, 59, 0.2)';
+    }
+  }};
+  color: ${props => {
+    switch (props.status) {
+      case 'submitted': return '#74c0fc';
+      case 'accepted': return '#51cf66';
+      case 'rejected': return '#ff6b6b';
+      default: return '#ffd43b';
+    }
+  }};
+  border: 1px solid ${props => {
+    switch (props.status) {
+      case 'submitted': return 'rgba(116, 192, 252, 0.3)';
+      case 'accepted': return 'rgba(81, 207, 102, 0.3)';
+      case 'rejected': return 'rgba(255, 107, 107, 0.3)';
+      default: return 'rgba(255, 212, 59, 0.3)';
+    }
+  }};
+`;
+
 function Submissions() {
   const [songUrl, setSongUrl] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('Pop');
@@ -426,6 +493,8 @@ function Submissions() {
   const [searchingPlaylists, setSearchingPlaylists] = useState(false);
   const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(false);
   const [submittingToPlaylist, setSubmittingToPlaylist] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
   const handleLoadTrack = async () => {
     if (!songUrl.trim()) {
@@ -473,6 +542,17 @@ function Submissions() {
       return;
     }
 
+    // Calculate dropdown position
+    const searchButton = document.getElementById('search-button');
+    if (searchButton) {
+      const rect = searchButton.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 10,
+        left: rect.left,
+        width: Math.max(rect.width, 600) // Ensure minimum width of 600px
+      });
+    }
+
     setSearchingPlaylists(true);
     setError('');
     setPlaylists([]);
@@ -505,6 +585,22 @@ function Submissions() {
       // In a real app, you would submit to the playlist here
       console.log(`Submitting ${trackInfo.name} to playlist: ${playlist.name}`);
       
+      // Add to submissions list
+      const newSubmission = {
+        id: Date.now(),
+        trackName: trackInfo.name,
+        trackArtist: trackInfo.artists?.map(a => a.name).join(', '),
+        playlistName: playlist.name,
+        playlistOwner: playlist.owner,
+        playlistFollowers: playlist.followers,
+        submittedAt: new Date(),
+        status: 'submitted',
+        trackImage: trackInfo.album?.images?.[0]?.url,
+        playlistImage: playlist.images?.[0]?.url
+      };
+      
+      setSubmissions(prev => [newSubmission, ...prev]);
+      
       // Show success message
       alert(`Successfully submitted to ${playlist.name}!`);
     } catch (err) {
@@ -522,6 +618,24 @@ function Submissions() {
       return `${(count / 1000).toFixed(1)}K`;
     }
     return count.toString();
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getSubmissionStats = () => {
+    const total = submissions.length;
+    const accepted = submissions.filter(s => s.status === 'accepted').length;
+    const rejected = submissions.filter(s => s.status === 'rejected').length;
+    const inReview = submissions.filter(s => s.status === 'submitted').length;
+    
+    return { total, accepted, rejected, inReview };
   };
 
   return (
@@ -622,6 +736,7 @@ function Submissions() {
           
           <PlaylistSearchContainer>
             <SearchButton
+              id="search-button"
               onClick={handleSearchPlaylists}
               disabled={searchingPlaylists}
               whileHover={{ scale: 1.02 }}
@@ -640,64 +755,71 @@ function Submissions() {
               )}
             </SearchButton>
 
-            {showPlaylistDropdown && (
-              <PlaylistDropdown>
-                {searchingPlaylists ? (
-                  <NoPlaylistsMessage>
-                    <LoadingSpinner />
-                    Searching for playlists...
-                  </NoPlaylistsMessage>
-                ) : playlists.length > 0 ? (
-                  playlists.map((playlist, index) => (
-                    <PlaylistItem key={playlist.id}>
-                      <PlaylistImage 
-                        src={playlist.images?.[0]?.url || '/placeholder-playlist.jpg'} 
-                        alt={playlist.name}
-                      />
-                      <PlaylistInfo>
-                        <PlaylistName>{playlist.name}</PlaylistName>
-                        <PlaylistDetails>
-                          <span>By {playlist.owner}</span>
-                          {playlist.description && (
-                            <span>• {playlist.description.substring(0, 50)}...</span>
+                          {showPlaylistDropdown && (
+                ReactDOM.createPortal(
+                  <PlaylistDropdown
+                    top={dropdownPosition.top}
+                    left={dropdownPosition.left}
+                    width={dropdownPosition.width}
+                  >
+                  {searchingPlaylists ? (
+                    <NoPlaylistsMessage>
+                      <LoadingSpinner />
+                      Searching for playlists...
+                    </NoPlaylistsMessage>
+                  ) : playlists.length > 0 ? (
+                    playlists.map((playlist, index) => (
+                      <PlaylistItem key={playlist.id}>
+                        <PlaylistImage 
+                          src={playlist.images?.[0]?.url || '/placeholder-playlist.jpg'} 
+                          alt={playlist.name}
+                        />
+                        <PlaylistInfo>
+                          <PlaylistName>{playlist.name}</PlaylistName>
+                          <PlaylistDetails>
+                            <span>By {playlist.owner}</span>
+                            {playlist.description && (
+                              <span>• {playlist.description.substring(0, 50)}...</span>
+                            )}
+                          </PlaylistDetails>
+                          <PlaylistOwner>
+                            {playlist.public ? 'Public' : 'Private'} • {playlist.collaborative ? 'Collaborative' : 'Curated'}
+                          </PlaylistOwner>
+                        </PlaylistInfo>
+                        <PlaylistStats>
+                          <FollowerCount>
+                            <FaUsers /> {formatFollowerCount(playlist.followers)}
+                          </FollowerCount>
+                          <TrackCount>
+                            <FaMusic /> {playlist.tracks} tracks
+                          </TrackCount>
+                        </PlaylistStats>
+                        <SubmitButton
+                          onClick={() => handleSubmitToPlaylist(playlist)}
+                          disabled={submittingToPlaylist === playlist.id || !trackInfo}
+                        >
+                          {submittingToPlaylist === playlist.id ? (
+                            <>
+                              <LoadingSpinner />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              <FaUpload />
+                              Submit
+                            </>
                           )}
-                        </PlaylistDetails>
-                        <PlaylistOwner>
-                          {playlist.public ? 'Public' : 'Private'} • {playlist.collaborative ? 'Collaborative' : 'Curated'}
-                        </PlaylistOwner>
-                      </PlaylistInfo>
-                      <PlaylistStats>
-                        <FollowerCount>
-                          <FaUsers /> {formatFollowerCount(playlist.followers)}
-                        </FollowerCount>
-                        <TrackCount>
-                          <FaMusic /> {playlist.tracks} tracks
-                        </TrackCount>
-                      </PlaylistStats>
-                      <SubmitButton
-                        onClick={() => handleSubmitToPlaylist(playlist)}
-                        disabled={submittingToPlaylist === playlist.id || !trackInfo}
-                      >
-                        {submittingToPlaylist === playlist.id ? (
-                          <>
-                            <LoadingSpinner />
-                            Submitting...
-                          </>
-                        ) : (
-                          <>
-                            <FaUpload />
-                            Submit
-                          </>
-                        )}
-                      </SubmitButton>
-                    </PlaylistItem>
-                  ))
-                ) : (
-                  <NoPlaylistsMessage>
-                    No playlists found for "{selectedGenre}". Try a different genre.
-                  </NoPlaylistsMessage>
-                )}
-              </PlaylistDropdown>
+                        </SubmitButton>
+                      </PlaylistItem>
+                    ))
+                  ) : (
+                    <NoPlaylistsMessage>
+                      No playlists found for "{selectedGenre}". Try a different genre.
+                    </NoPlaylistsMessage>
+                  )}
+                </PlaylistDropdown>,
+                document.body
+              )
             )}
           </PlaylistSearchContainer>
           
@@ -712,13 +834,44 @@ function Submissions() {
           transition={{ duration: 0.8, delay: 0.6 }}
         >
           <CardTitle>Your Submissions</CardTitle>
-          <EmptyState>
-            <MusicIcon />
-            <div>No submissions yet</div>
-            <div style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-              Submit your first track to get started.
+          {submissions.length > 0 ? (
+            <div>
+              {submissions.map((submission) => (
+                <SubmissionItem key={submission.id}>
+                  <img 
+                    src={submission.trackImage || '/placeholder-track.jpg'} 
+                    alt={submission.trackName}
+                    style={{ width: '50px', height: '50px', borderRadius: '6px', objectFit: 'cover' }}
+                  />
+                  <SubmissionInfo>
+                    <SubmissionTitle>{submission.trackName}</SubmissionTitle>
+                    <SubmissionDetails>
+                      <span>by {submission.trackArtist}</span>
+                      <span>•</span>
+                      <span>to {submission.playlistName}</span>
+                      <span>•</span>
+                      <span>{formatFollowerCount(submission.playlistFollowers)} followers</span>
+                      <span>•</span>
+                      <span>{formatDate(submission.submittedAt)}</span>
+                    </SubmissionDetails>
+                  </SubmissionInfo>
+                  <SubmissionStatus status={submission.status}>
+                    {submission.status === 'submitted' && 'Submitted'}
+                    {submission.status === 'accepted' && 'Accepted'}
+                    {submission.status === 'rejected' && 'Rejected'}
+                  </SubmissionStatus>
+                </SubmissionItem>
+              ))}
             </div>
-          </EmptyState>
+          ) : (
+            <EmptyState>
+              <MusicIcon />
+              <div>No submissions yet</div>
+              <div style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                Submit your first track to get started.
+              </div>
+            </EmptyState>
+          )}
         </DashboardCard>
 
         <DashboardCard
@@ -729,19 +882,19 @@ function Submissions() {
           <CardTitle>Submission Stats</CardTitle>
           <StatsGrid>
             <StatCard>
-              <StatValue color="blue">0</StatValue>
+              <StatValue color="blue">{getSubmissionStats().total}</StatValue>
               <StatLabel>Total Submissions</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue color="green">0</StatValue>
+              <StatValue color="green">{getSubmissionStats().accepted}</StatValue>
               <StatLabel>Accepted</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue color="orange">0</StatValue>
+              <StatValue color="orange">{getSubmissionStats().inReview}</StatValue>
               <StatLabel>In Review</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue color="red">0</StatValue>
+              <StatValue color="red">{getSubmissionStats().rejected}</StatValue>
               <StatLabel>Rejected</StatLabel>
             </StatCard>
           </StatsGrid>
