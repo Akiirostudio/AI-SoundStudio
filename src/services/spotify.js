@@ -186,6 +186,77 @@ class SpotifyService {
     }
   }
 
+  async searchPlaylistsByGenre(genre, limit = 10) {
+    try {
+      const token = await this.getAccessToken();
+      
+      // Search for playlists with the genre in the name or description
+      const searchQuery = encodeURIComponent(genre);
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?q=${searchQuery}&type=playlist&limit=${limit}&market=US`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to search playlists');
+      }
+
+      const data = await response.json();
+      const playlists = data.playlists?.items || [];
+
+      // Get detailed info for each playlist including follower count
+      const detailedPlaylists = await Promise.all(
+        playlists.map(async (playlist) => {
+          try {
+            const playlistResponse = await fetch(
+              `https://api.spotify.com/v1/playlists/${playlist.id}`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              }
+            );
+
+            if (playlistResponse.ok) {
+              const detailedPlaylist = await playlistResponse.json();
+              return {
+                id: detailedPlaylist.id,
+                name: detailedPlaylist.name,
+                description: detailedPlaylist.description,
+                followers: detailedPlaylist.followers?.total || 0,
+                tracks: detailedPlaylist.tracks?.total || 0,
+                owner: detailedPlaylist.owner?.display_name,
+                images: detailedPlaylist.images,
+                public: detailedPlaylist.public,
+                collaborative: detailedPlaylist.collaborative,
+                external_url: detailedPlaylist.external_urls?.spotify
+              };
+            }
+            return null;
+          } catch (error) {
+            console.error('Error fetching playlist details:', error);
+            return null;
+          }
+        })
+      );
+
+      // Filter out null results and sort by follower count
+      const validPlaylists = detailedPlaylists
+        .filter(playlist => playlist !== null)
+        .sort((a, b) => b.followers - a.followers)
+        .slice(0, limit);
+
+      return validPlaylists;
+    } catch (error) {
+      console.error('Error searching playlists:', error);
+      throw error;
+    }
+  }
+
   extractPlaylistId(url) {
     const match = url.match(/playlist\/([a-zA-Z0-9]+)/);
     return match ? match[1] : url;

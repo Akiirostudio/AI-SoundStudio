@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaMusic, FaSearch } from 'react-icons/fa';
+import { FaMusic, FaUpload, FaSearch, FaUsers, FaPlay, FaExternalLinkAlt } from 'react-icons/fa';
 import SpotifyService from '../services/spotify';
 
 const SubmissionsContainer = styled.div`
@@ -288,12 +289,143 @@ const LoadingSpinner = styled.div`
   }
 `;
 
+const PlaylistSearchContainer = styled.div`
+  margin-top: 1rem;
+  position: relative;
+`;
+
+const PlaylistDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 0.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+`;
+
+const PlaylistItem = styled.div`
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const PlaylistImage = styled.img`
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+`;
+
+const PlaylistInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const PlaylistName = styled.div`
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const PlaylistDetails = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+`;
+
+const PlaylistStats = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+`;
+
+const FollowerCount = styled.div`
+  color: #51cf66;
+  font-weight: 600;
+  font-size: 0.9rem;
+`;
+
+const TrackCount = styled.div`
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+`;
+
+const SubmitButton = styled.button`
+  background: linear-gradient(135deg, #51cf66, #40c057);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(81, 207, 102, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const NoPlaylistsMessage = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+`;
+
+const PlaylistOwner = styled.div`
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+`;
+
 function Submissions() {
   const [songUrl, setSongUrl] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('Pop');
   const [trackInfo, setTrackInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [playlists, setPlaylists] = useState([]);
+  const [searchingPlaylists, setSearchingPlaylists] = useState(false);
+  const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(false);
+  const [submittingToPlaylist, setSubmittingToPlaylist] = useState(null);
 
   const handleLoadTrack = async () => {
     if (!songUrl.trim()) {
@@ -334,6 +466,63 @@ function Submissions() {
   };
 
   const genres = ['Pop', 'Rock', 'Hip Hop', 'Electronic', 'Jazz', 'Classical', 'Country', 'R&B', 'Indie', 'Metal'];
+
+  const handleSearchPlaylists = async () => {
+    if (!selectedGenre) {
+      setError('Please select a genre');
+      return;
+    }
+
+    setSearchingPlaylists(true);
+    setError('');
+    setPlaylists([]);
+    setShowPlaylistDropdown(true);
+
+    try {
+      const foundPlaylists = await SpotifyService.searchPlaylistsByGenre(selectedGenre, 10);
+      setPlaylists(foundPlaylists);
+    } catch (err) {
+      setError('Failed to search playlists. Please try again.');
+      console.error('Playlist search error:', err);
+    } finally {
+      setSearchingPlaylists(false);
+    }
+  };
+
+  const handleSubmitToPlaylist = async (playlist) => {
+    if (!trackInfo) {
+      setError('Please load a track first');
+      return;
+    }
+
+    setSubmittingToPlaylist(playlist.id);
+    setError('');
+
+    try {
+      // Simulate submission process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // In a real app, you would submit to the playlist here
+      console.log(`Submitting ${trackInfo.name} to playlist: ${playlist.name}`);
+      
+      // Show success message
+      alert(`Successfully submitted to ${playlist.name}!`);
+    } catch (err) {
+      setError('Failed to submit to playlist. Please try again.');
+      console.error('Submission error:', err);
+    } finally {
+      setSubmittingToPlaylist(null);
+    }
+  };
+
+  const formatFollowerCount = (count) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
+    }
+    return count.toString();
+  };
 
   return (
     <SubmissionsContainer>
@@ -430,13 +619,88 @@ function Submissions() {
               ))}
             </Select>
           </FormGroup>
-          <SearchButton
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <FaSearch style={{ marginRight: '0.5rem' }} />
-            Search
-          </SearchButton>
+          
+          <PlaylistSearchContainer>
+            <SearchButton
+              onClick={handleSearchPlaylists}
+              disabled={searchingPlaylists}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {searchingPlaylists ? (
+                <>
+                  <LoadingSpinner />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <FaSearch />
+                  Search for Playlists
+                </>
+              )}
+            </SearchButton>
+
+            {showPlaylistDropdown && (
+              <PlaylistDropdown>
+                {searchingPlaylists ? (
+                  <NoPlaylistsMessage>
+                    <LoadingSpinner />
+                    Searching for playlists...
+                  </NoPlaylistsMessage>
+                ) : playlists.length > 0 ? (
+                  playlists.map((playlist, index) => (
+                    <PlaylistItem key={playlist.id}>
+                      <PlaylistImage 
+                        src={playlist.images?.[0]?.url || '/placeholder-playlist.jpg'} 
+                        alt={playlist.name}
+                      />
+                      <PlaylistInfo>
+                        <PlaylistName>{playlist.name}</PlaylistName>
+                        <PlaylistDetails>
+                          <span>By {playlist.owner}</span>
+                          {playlist.description && (
+                            <span>• {playlist.description.substring(0, 50)}...</span>
+                          )}
+                        </PlaylistDetails>
+                        <PlaylistOwner>
+                          {playlist.public ? 'Public' : 'Private'} • {playlist.collaborative ? 'Collaborative' : 'Curated'}
+                        </PlaylistOwner>
+                      </PlaylistInfo>
+                      <PlaylistStats>
+                        <FollowerCount>
+                          <FaUsers /> {formatFollowerCount(playlist.followers)}
+                        </FollowerCount>
+                        <TrackCount>
+                          <FaMusic /> {playlist.tracks} tracks
+                        </TrackCount>
+                      </PlaylistStats>
+                      <SubmitButton
+                        onClick={() => handleSubmitToPlaylist(playlist)}
+                        disabled={submittingToPlaylist === playlist.id || !trackInfo}
+                      >
+                        {submittingToPlaylist === playlist.id ? (
+                          <>
+                            <LoadingSpinner />
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <FaUpload />
+                            Submit
+                          </>
+                        )}
+                      </SubmitButton>
+                    </PlaylistItem>
+                  ))
+                ) : (
+                  <NoPlaylistsMessage>
+                    No playlists found for "{selectedGenre}". Try a different genre.
+                  </NoPlaylistsMessage>
+                )}
+              </PlaylistDropdown>
+            )}
+          </PlaylistSearchContainer>
+          
           <Description>
             Search for playlists by genre to submit your music.
           </Description>
