@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
+import { FaExclamationTriangle, FaChartBar, FaArrowUp, FaArrowDown, FaRobot, FaShieldAlt, FaSearch, FaStar, FaUserFriends } from 'react-icons/fa';
 import SpotifyService from '../services/spotify';
 
 const AnalyzerContainer = styled.div`
@@ -208,11 +209,433 @@ const ErrorMessage = styled.div`
   margin-top: 1rem;
 `;
 
+const BotWarning = styled.div`
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ff6b6b;
+  font-weight: 500;
+`;
+
+const GrowthChart = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+`;
+
+const ChartTitle = styled.h3`
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const ChartContainer = styled.div`
+  height: 200px;
+  position: relative;
+  margin-top: 1rem;
+`;
+
+const ChartLine = styled.svg`
+  width: 100%;
+  height: 100%;
+`;
+
+const ChartPath = styled.path`
+  fill: none;
+  stroke: linear-gradient(45deg, #667eea, #764ba2);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+`;
+
+const ChartGrid = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  pointer-events: none;
+`;
+
+const GridLine = styled.div`
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+const BotScoreCard = styled.div`
+  background: ${props => props.score > 30 ? 'rgba(255, 107, 107, 0.1)' : 'rgba(255, 255, 255, 0.05)'};
+  border: 1px solid ${props => props.score > 30 ? 'rgba(255, 107, 107, 0.3)' : 'rgba(255, 255, 255, 0.2)'};
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-top: 1rem;
+`;
+
+const BotScoreValue = styled.div`
+  font-size: 2rem;
+  font-weight: 700;
+  color: ${props => props.score > 30 ? '#ff6b6b' : '#51cf66'};
+  margin-bottom: 0.5rem;
+`;
+
+const BotScoreLabel = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 500;
+`;
+
+const BotIndicators = styled.div`
+  margin-top: 1rem;
+  text-align: left;
+`;
+
+const BotIndicator = styled.div`
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1rem;
+  position: relative;
+  
+  &::before {
+    content: '•';
+    color: #ff6b6b;
+    position: absolute;
+    left: 0;
+  }
+`;
+
+const PopularityChart = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+`;
+
+const DistributionGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const DistributionCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+`;
+
+const DistributionValue = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: ${props => {
+    if (props.range.includes('High')) return '#51cf66';
+    if (props.range.includes('Medium')) return '#ffd43b';
+    return '#ff6b6b';
+  }};
+  margin-bottom: 0.25rem;
+`;
+
+const DistributionLabel = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 500;
+`;
+
+const TrendIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => {
+    if (props.trend === 'high') return '#51cf66';
+    if (props.trend === 'low') return '#ff6b6b';
+    return '#ffd43b';
+  }};
+  font-weight: 600;
+  margin-top: 1rem;
+`;
+
+const SuspiciousWarning = styled.div`
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ff6b6b;
+  font-weight: 500;
+`;
+
+const SuspiciousPatterns = styled.div`
+  margin-top: 1rem;
+  text-align: left;
+`;
+
+const SuspiciousPattern = styled.div`
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1rem;
+  position: relative;
+  
+  &::before {
+    content: '•';
+    color: #ff6b6b;
+    position: absolute;
+    left: 0;
+  }
+`;
+
+const BotAnalysisCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  border: 1px solid ${props => props.hasBotActivity ? 'rgba(255, 107, 107, 0.3)' : 'rgba(102, 126, 234, 0.3)'};
+`;
+
+const BotScoreDisplay = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+const BotScoreCircle = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: ${props => {
+    if (props.score >= 70) return 'linear-gradient(135deg, #ff6b6b, #ee5a52)';
+    if (props.score >= 40) return 'linear-gradient(135deg, #ffd93d, #f6c90e)';
+    return 'linear-gradient(135deg, #51cf66, #40c057)';
+  }};
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+`;
+
+const BotScoreInfo = styled.div`
+  flex: 1;
+`;
+
+const BotScoreDescription = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+`;
+
+
+
+const BotMetricsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+`;
+
+const BotMetricCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+`;
+
+const BotMetricValue = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.25rem;
+`;
+
+const BotMetricLabel = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 500;
+`;
+
+const LegitimateIndicator = styled.div`
+  background: rgba(81, 207, 102, 0.1);
+  border: 1px solid rgba(81, 207, 102, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #51cf66;
+  font-weight: 500;
+`;
+
+const DiscoveryCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+`;
+
+const DiscoveryScoreDisplay = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+const DiscoveryScoreCircle = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: ${props => {
+    if (props.score >= 80) return 'linear-gradient(135deg, #51cf66, #40c057)';
+    if (props.score >= 60) return 'linear-gradient(135deg, #74c0fc, #4dabf7)';
+    if (props.score >= 40) return 'linear-gradient(135deg, #ffd43b, #fcc419)';
+    if (props.score >= 20) return 'linear-gradient(135deg, #ffa8a8, #ff8787)';
+    return 'linear-gradient(135deg, #adb5bd, #868e96)';
+  }};
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+`;
+
+const DiscoveryScoreInfo = styled.div`
+  flex: 1;
+`;
+
+const DiscoveryScoreLabel = styled.div`
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+`;
+
+const DiscoveryScoreDescription = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+`;
+
+const DiscoveredArtistsList = styled.div`
+  margin-top: 1.5rem;
+`;
+
+const ArtistCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const ArtistInfo = styled.div`
+  flex: 1;
+`;
+
+const ArtistName = styled.div`
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.25rem;
+`;
+
+const ArtistDetails = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+`;
+
+const DiscoveryBadge = styled.div`
+  background: ${props => {
+    if (props.score >= 80) return 'rgba(81, 207, 102, 0.2)';
+    if (props.score >= 60) return 'rgba(116, 192, 252, 0.2)';
+    if (props.score >= 40) return 'rgba(255, 212, 59, 0.2)';
+    return 'rgba(255, 168, 168, 0.2)';
+  }};
+  color: ${props => {
+    if (props.score >= 80) return '#51cf66';
+    if (props.score >= 60) return '#74c0fc';
+    if (props.score >= 40) return '#ffd43b';
+    return '#ffa8a8';
+  }};
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid ${props => {
+    if (props.score >= 80) return 'rgba(81, 207, 102, 0.3)';
+    if (props.score >= 60) return 'rgba(116, 192, 252, 0.3)';
+    if (props.score >= 40) return 'rgba(255, 212, 59, 0.3)';
+    return 'rgba(255, 168, 168, 0.3)';
+  }};
+`;
+
+const DiscoveryMetricsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+`;
+
+const DiscoveryMetricCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+`;
+
+const DiscoveryMetricValue = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.25rem;
+`;
+
+const DiscoveryMetricLabel = styled.div`
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 500;
+`;
+
 function Analyzer() {
   const [playlistUrl, setPlaylistUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+
+  const generateChartPath = (growthData) => {
+    if (!growthData || growthData.length === 0) return '';
+    
+    const maxFollowers = Math.max(...growthData.map(d => d.followers));
+    const minFollowers = Math.min(...growthData.map(d => d.followers));
+    const range = maxFollowers - minFollowers || 1;
+    
+    const points = growthData.map((data, index) => {
+      const x = (index / (growthData.length - 1)) * 100;
+      const y = 100 - ((data.followers - minFollowers) / range) * 100;
+      return `${x},${y}`;
+    });
+    
+    return `M ${points.join(' L ')}`;
+  };
 
   const handleAnalyze = async () => {
     if (!playlistUrl.trim()) {
@@ -230,7 +653,9 @@ function Analyzer() {
       
       setResults({
         playlist: playlistData,
-        analysis: analysis
+        analysis: analysis,
+        botAnalysis: playlistData.botAnalysis,
+        discoveryAnalysis: playlistData.discoveryAnalysis
       });
     } catch (err) {
       setError('Failed to analyze playlist. Please check the URL and try again.');
@@ -307,6 +732,12 @@ function Analyzer() {
                   <span>{results.analysis.uniqueArtists} artists</span>
                   <span>•</span>
                   <span>By {results.playlist.owner?.display_name}</span>
+                  {results.playlist.followers && (
+                    <>
+                      <span>•</span>
+                      <span>{results.playlist.followers.total.toLocaleString()} followers</span>
+                    </>
+                  )}
                 </PlaylistStats>
               </PlaylistDetails>
             </PlaylistInfo>
@@ -318,17 +749,154 @@ function Analyzer() {
               </MetricCard>
               <MetricCard>
                 <MetricValue>{results.analysis.popularity}</MetricValue>
-                <MetricLabel>Popularity</MetricLabel>
+                <MetricLabel>Avg Popularity</MetricLabel>
               </MetricCard>
               <MetricCard>
                 <MetricValue>{results.analysis.freshness}%</MetricValue>
                 <MetricLabel>Freshness</MetricLabel>
+              </MetricCard>
+              <MetricCard>
+                <MetricValue>{results.analysis.uniqueArtists}</MetricValue>
+                <MetricLabel>Unique Artists</MetricLabel>
               </MetricCard>
             </MetricsGrid>
 
             <AnalysisText>
               {results.analysis.analysis}
             </AnalysisText>
+
+            {/* Bot Detection Analysis */}
+            {results.botAnalysis && (
+              <BotAnalysisCard hasBotActivity={results.botAnalysis.hasBotActivity}>
+                <ChartTitle>
+                  <FaRobot />
+                  Bot Detection Analysis
+                </ChartTitle>
+                
+                <BotScoreDisplay>
+                  <BotScoreCircle score={results.botAnalysis.botScore}>
+                    {results.botAnalysis.botScore}%
+                  </BotScoreCircle>
+                  <BotScoreInfo>
+                    <BotScoreLabel>
+                      {results.botAnalysis.hasBotActivity ? 'Bot Activity Detected' : 'Legitimate Playlist'}
+                    </BotScoreLabel>
+                    <BotScoreDescription>
+                      {results.botAnalysis.analysis}
+                    </BotScoreDescription>
+                  </BotScoreInfo>
+                </BotScoreDisplay>
+
+                {results.botAnalysis.hasBotActivity ? (
+                  <BotWarning>
+                    <FaExclamationTriangle />
+                    This playlist shows signs of bot activity
+                  </BotWarning>
+                ) : (
+                  <LegitimateIndicator>
+                    <FaShieldAlt />
+                    This playlist appears to be legitimate
+                  </LegitimateIndicator>
+                )}
+
+                {results.botAnalysis.indicators.length > 0 && (
+                  <BotIndicators>
+                    {results.botAnalysis.indicators.map((indicator, index) => (
+                      <BotIndicator key={index}>
+                        <FaExclamationTriangle />
+                        {indicator}
+                      </BotIndicator>
+                    ))}
+                  </BotIndicators>
+                )}
+
+                <BotMetricsGrid>
+                  <BotMetricCard>
+                    <BotMetricValue>{results.botAnalysis.metrics.followerToTrackRatio}</BotMetricValue>
+                    <BotMetricLabel>Follower/Track Ratio</BotMetricLabel>
+                  </BotMetricCard>
+                  <BotMetricCard>
+                    <BotMetricValue>{results.botAnalysis.metrics.artistDiversity}%</BotMetricValue>
+                    <BotMetricLabel>Artist Diversity</BotMetricLabel>
+                  </BotMetricCard>
+                  <BotMetricCard>
+                    <BotMetricValue>{results.botAnalysis.metrics.avgPopularity}</BotMetricValue>
+                    <BotMetricLabel>Avg Popularity</BotMetricLabel>
+                  </BotMetricCard>
+                  <BotMetricCard>
+                    <BotMetricValue>{results.botAnalysis.metrics.avgDuration}s</BotMetricValue>
+                    <BotMetricLabel>Avg Duration</BotMetricLabel>
+                  </BotMetricCard>
+                  <BotMetricCard>
+                    <BotMetricValue>{results.botAnalysis.metrics.uniqueDates}</BotMetricValue>
+                    <BotMetricLabel>Unique Dates</BotMetricLabel>
+                  </BotMetricCard>
+                </BotMetricsGrid>
+              </BotAnalysisCard>
+            )}
+
+            {/* Discovery Analysis */}
+            {results.discoveryAnalysis && (
+              <DiscoveryCard>
+                <ChartTitle>
+                  <FaSearch />
+                  Discovery Analysis
+                </ChartTitle>
+                
+                <DiscoveryScoreDisplay>
+                  <DiscoveryScoreCircle score={results.discoveryAnalysis.discoveryScore}>
+                    {results.discoveryAnalysis.discoveryScore}%
+                  </DiscoveryScoreCircle>
+                  <DiscoveryScoreInfo>
+                    <DiscoveryScoreLabel>
+                      {results.discoveryAnalysis.discoveryLevel}
+                    </DiscoveryScoreLabel>
+                    <DiscoveryScoreDescription>
+                      {results.discoveryAnalysis.discoveryDescription}
+                    </DiscoveryScoreDescription>
+                  </DiscoveryScoreInfo>
+                </DiscoveryScoreDisplay>
+
+                {results.discoveryAnalysis.discoveredArtists && results.discoveryAnalysis.discoveredArtists.length > 0 && (
+                  <DiscoveredArtistsList>
+                    <h4 style={{ color: 'white', marginBottom: '1rem' }}>Top Discovered Artists</h4>
+                    {results.discoveryAnalysis.discoveredArtists.slice(0, 5).map((artist, index) => (
+                      <ArtistCard key={index}>
+                        <FaStar />
+                        <ArtistInfo>
+                          <ArtistName>{artist.name}</ArtistName>
+                          <ArtistDetails>
+                            Popularity: {artist.popularity}/100 • Track: {artist.trackName}
+                          </ArtistDetails>
+                        </ArtistInfo>
+                        <DiscoveryBadge score={artist.discoveryScore}>
+                          {artist.discoveryScore}%
+                        </DiscoveryBadge>
+                      </ArtistCard>
+                    ))}
+                  </DiscoveredArtistsList>
+                )}
+
+                <DiscoveryMetricsGrid>
+                  <DiscoveryMetricCard>
+                    <DiscoveryMetricValue>{results.discoveryAnalysis.discoveryMetrics.totalArtists}</DiscoveryMetricValue>
+                    <DiscoveryMetricLabel>Total Artists</DiscoveryMetricLabel>
+                  </DiscoveryMetricCard>
+                  <DiscoveryMetricCard>
+                    <DiscoveryMetricValue>{results.discoveryAnalysis.discoveryMetrics.discoveredArtistsCount}</DiscoveryMetricValue>
+                    <DiscoveryMetricLabel>Discovered Artists</DiscoveryMetricLabel>
+                  </DiscoveryMetricCard>
+                  <DiscoveryMetricCard>
+                    <DiscoveryMetricValue>{results.discoveryAnalysis.discoveryMetrics.avgArtistPopularity}</DiscoveryMetricValue>
+                    <DiscoveryMetricLabel>Avg Artist Popularity</DiscoveryMetricLabel>
+                  </DiscoveryMetricCard>
+                  <DiscoveryMetricCard>
+                    <DiscoveryMetricValue>{results.discoveryAnalysis.discoveryMetrics.artistDiversity}%</DiscoveryMetricValue>
+                    <DiscoveryMetricLabel>Artist Diversity</DiscoveryMetricLabel>
+                  </DiscoveryMetricCard>
+                </DiscoveryMetricsGrid>
+              </DiscoveryCard>
+            )}
           </ResultsCard>
         </ResultsContainer>
       )}
