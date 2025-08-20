@@ -304,10 +304,29 @@ const PlaylistDropdown = styled.div`
   backdrop-filter: blur(10px);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
   z-index: 999999;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  
+  /* Custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  }
 `;
 
 const PlaylistItem = styled.div`
@@ -496,6 +515,48 @@ function Submissions() {
   const [submissions, setSubmissions] = useState([]);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
+  // Update dropdown position when scrolling
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (showPlaylistDropdown) {
+        const searchButton = document.getElementById('search-button');
+        if (searchButton) {
+          const rect = searchButton.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+          
+          setDropdownPosition({
+            top: rect.bottom + scrollTop + 10,
+            left: rect.left + scrollLeft,
+            width: Math.max(rect.width, 600)
+          });
+        }
+      }
+    };
+
+    const handleClickOutside = (event) => {
+      if (showPlaylistDropdown) {
+        const searchButton = document.getElementById('search-button');
+        const dropdown = document.querySelector('[data-dropdown]');
+        
+        if (searchButton && !searchButton.contains(event.target) && 
+            dropdown && !dropdown.contains(event.target)) {
+          setShowPlaylistDropdown(false);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showPlaylistDropdown]);
+
   const handleLoadTrack = async () => {
     if (!songUrl.trim()) {
       setError('Please enter a song URL');
@@ -542,13 +603,16 @@ function Submissions() {
       return;
     }
 
-    // Calculate dropdown position
+    // Calculate dropdown position relative to viewport
     const searchButton = document.getElementById('search-button');
     if (searchButton) {
       const rect = searchButton.getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+      
       setDropdownPosition({
-        top: rect.bottom + 10,
-        left: rect.left,
+        top: rect.bottom + scrollTop + 10,
+        left: rect.left + scrollLeft,
         width: Math.max(rect.width, 600) // Ensure minimum width of 600px
       });
     }
@@ -758,6 +822,7 @@ function Submissions() {
                           {showPlaylistDropdown && (
                 ReactDOM.createPortal(
                   <PlaylistDropdown
+                    data-dropdown
                     top={dropdownPosition.top}
                     left={dropdownPosition.left}
                     width={dropdownPosition.width}

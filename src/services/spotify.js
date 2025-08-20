@@ -192,8 +192,10 @@ class SpotifyService {
       
       // Search for playlists with the genre in the name or description
       const searchQuery = encodeURIComponent(genre);
+      
+      // Get more results initially to filter for high-follower playlists
       const response = await fetch(
-        `https://api.spotify.com/v1/search?q=${searchQuery}&type=playlist&limit=${limit}&market=US`,
+        `https://api.spotify.com/v1/search?q=${searchQuery}&type=playlist&limit=50&market=US`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -244,11 +246,72 @@ class SpotifyService {
         })
       );
 
-      // Filter out null results and sort by follower count
+      // Filter out null results, filter for 10k+ followers, and sort by follower count
       const validPlaylists = detailedPlaylists
-        .filter(playlist => playlist !== null)
+        .filter(playlist => playlist !== null && playlist.followers >= 10000)
         .sort((a, b) => b.followers - a.followers)
         .slice(0, limit);
+
+      // If we don't have enough high-follower playlists, get more results
+      if (validPlaylists.length < limit) {
+        // Try a broader search to get more results
+        const broaderResponse = await fetch(
+          `https://api.spotify.com/v1/search?q=${searchQuery}%20playlist&type=playlist&limit=50&market=US`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        if (broaderResponse.ok) {
+          const broaderData = await broaderResponse.json();
+          const broaderPlaylists = broaderData.playlists?.items || [];
+
+          // Get details for additional playlists
+          const additionalPlaylists = await Promise.all(
+            broaderPlaylists.slice(0, 20).map(async (playlist) => {
+              try {
+                const playlistResponse = await fetch(
+                  `https://api.spotify.com/v1/playlists/${playlist.id}`,
+                  {
+                    headers: {
+                      'Authorization': `Bearer ${token}`
+                    }
+                  }
+                );
+
+                if (playlistResponse.ok) {
+                  const detailedPlaylist = await playlistResponse.json();
+                  return {
+                    id: detailedPlaylist.id,
+                    name: detailedPlaylist.name,
+                    description: detailedPlaylist.description,
+                    followers: detailedPlaylist.followers?.total || 0,
+                    tracks: detailedPlaylist.tracks?.total || 0,
+                    owner: detailedPlaylist.owner?.display_name,
+                    images: detailedPlaylist.images,
+                    public: detailedPlaylist.public,
+                    collaborative: detailedPlaylist.collaborative,
+                    external_url: detailedPlaylist.external_urls?.spotify
+                  };
+                }
+                return null;
+              } catch (error) {
+                return null;
+              }
+            })
+          );
+
+          // Combine and filter results
+          const allPlaylists = [...validPlaylists, ...additionalPlaylists]
+            .filter(playlist => playlist !== null && playlist.followers >= 10000)
+            .sort((a, b) => b.followers - a.followers)
+            .slice(0, limit);
+
+          return allPlaylists;
+        }
+      }
 
       return validPlaylists;
     } catch (error) {
