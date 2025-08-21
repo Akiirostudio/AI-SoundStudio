@@ -8,10 +8,10 @@ const Nav = styled.nav`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.875rem 1.5rem;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -21,11 +21,12 @@ const Logo = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: white;
   cursor: pointer;
   transition: opacity 0.3s ease;
+  letter-spacing: -0.01em;
   
   &:hover {
     opacity: 0.8;
@@ -33,23 +34,25 @@ const Logo = styled.div`
 `;
 
 const LogoIcon = styled.img`
-  width: 32px;
-  height: 20px;
+  width: 28px;
+  height: 18px;
   border-radius: 0;
 `;
 
 const NavLinks = styled.div`
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
 `;
 
 const NavLink = styled(Link)`
   color: ${props => props.active ? '#667eea' : 'white'};
   text-decoration: none;
   font-weight: 500;
+  font-size: 0.875rem;
   transition: color 0.3s ease;
   position: relative;
+  letter-spacing: 0;
   
   &:hover {
     color: #667eea;
@@ -59,7 +62,7 @@ const NavLink = styled(Link)`
     &::after {
       content: '';
       position: absolute;
-      bottom: -0.5rem;
+      bottom: -0.375rem;
       left: 0;
       width: 100%;
       height: 2px;
@@ -72,31 +75,33 @@ const NavLink = styled(Link)`
 const LoginButton = styled(Link)`
   background: linear-gradient(45deg, #667eea, #764ba2);
   color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 10px;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.875rem;
   transition: all 0.3s ease;
+  letter-spacing: 0;
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
   }
 `;
 
 const UserSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   position: relative;
 `;
 
 const SettingsButton = styled.button`
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   color: white;
-  padding: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.625rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -104,8 +109,8 @@ const SettingsButton = styled.button`
   justify-content: center;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
   }
 `;
 
@@ -114,53 +119,52 @@ const SettingsDropdown = styled.div`
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
-  padding: 1rem;
-  min-width: 280px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  min-width: 200px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   z-index: 1001;
 `;
 
 const UserInfo = styled.div`
-  padding-bottom: 1rem;
+  padding: 0.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 `;
 
 const UserName = styled.div`
-  color: white;
+  font-size: 0.875rem;
   font-weight: 600;
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  color: white;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.005em;
 `;
 
 const UserEmail = styled.div`
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  letter-spacing: 0;
+`;
+
+const DropdownItem = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-`;
-
-const SettingsOption = styled.button`
   width: 100%;
+  padding: 0.625rem 0.75rem;
   background: none;
   border: none;
   color: white;
-  padding: 0.75rem;
-  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  letter-spacing: 0;
   
   &:hover {
     background: rgba(255, 255, 255, 0.1);
@@ -173,6 +177,11 @@ const SettingsOption = styled.button`
       background: rgba(255, 107, 107, 0.1);
     }
   }
+`;
+
+const DropdownIcon = styled.div`
+  font-size: 0.875rem;
+  opacity: 0.7;
 `;
 
 const DeleteConfirmModal = styled.div`
@@ -304,21 +313,11 @@ function Navbar() {
       </Logo>
       
       <NavLinks>
-        <NavLink to="/analyzer" active={location.pathname === '/analyzer'}>
-          Analyzer
-        </NavLink>
-        <NavLink to="/playlists" active={location.pathname === '/playlists'}>
-          Playlists
-        </NavLink>
-        <NavLink to="/studio" active={location.pathname === '/studio'}>
-          Studio
-        </NavLink>
-        <NavLink to="/submissions" active={location.pathname === '/submissions'}>
-          Submissions
-        </NavLink>
-        <NavLink to="/tokens" active={location.pathname === '/tokens'}>
-          Tokens
-        </NavLink>
+        <NavLink to="/">Home</NavLink>
+        <NavLink to="/analyzer">Playlist Analyzer</NavLink>
+        <NavLink to="/submissions">Submissions</NavLink>
+        <NavLink to="/playlists">Playlists</NavLink>
+        <NavLink to="/pricing">Pricing</NavLink>
       </NavLinks>
       
       <UserSection ref={settingsRef}>
@@ -339,17 +338,17 @@ function Navbar() {
                     {currentUser.email}
                   </UserEmail>
                 </UserInfo>
-                <SettingsOption onClick={handleLogout}>
-                  <FaSignOutAlt />
+                <DropdownItem onClick={handleLogout}>
+                  <DropdownIcon><FaSignOutAlt /></DropdownIcon>
                   Sign Out
-                </SettingsOption>
-                <SettingsOption 
+                </DropdownItem>
+                <DropdownItem 
                   className="danger" 
                   onClick={() => setShowDeleteConfirm(true)}
                 >
-                  <FaTrash />
+                  <DropdownIcon><FaTrash /></DropdownIcon>
                   Delete Account
-                </SettingsOption>
+                </DropdownItem>
               </SettingsDropdown>
             )}
           </>

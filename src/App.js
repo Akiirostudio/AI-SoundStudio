@@ -4,10 +4,9 @@ import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Analyzer from './pages/Analyzer';
-import Playlists from './pages/Playlists';
-import Studio from './pages/Studio';
 import Submissions from './pages/Submissions';
-import Tokens from './pages/Tokens';
+import Playlists from './pages/Playlists';
+import Pricing from './pages/Pricing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { GlobalStyles } from './styles/GlobalStyles';
@@ -22,10 +21,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/analyzer" element={<Analyzer />} />
-            <Route path="/playlists" element={<Playlists />} />
-            <Route path="/studio" element={<Studio />} />
             <Route path="/submissions" element={<Submissions />} />
-            <Route path="/tokens" element={<Tokens />} />
+            <Route path="/playlists" element={<Playlists />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
           </Routes>

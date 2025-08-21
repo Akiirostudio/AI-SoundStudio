@@ -8,7 +8,7 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -18,6 +18,9 @@ export const GlobalStyles = createGlobalStyle`
     min-height: 100vh;
     color: white;
     overflow-x: hidden;
+    font-size: 14px;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
   }
 
   .App {
@@ -25,18 +28,154 @@ export const GlobalStyles = createGlobalStyle`
     position: relative;
   }
 
+  /* Apple Design Award Typography System */
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    margin-bottom: 0.875rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.75rem;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+    margin-bottom: 0.625rem;
+  }
+
+  h5 {
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  h6 {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    letter-spacing: 0;
+    margin-bottom: 1rem;
+    font-weight: 400;
+  }
+
+  .text-xs {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+
+  .text-sm {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+  }
+
+  .text-base {
+    font-size: 1rem;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+  }
+
+  .text-lg {
+    font-size: 1.125rem;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  .text-xl {
+    font-size: 1.25rem;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+  }
+
+  .text-2xl {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .text-3xl {
+    font-size: 1.875rem;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+
+  .text-4xl {
+    font-size: 2.25rem;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .text-5xl {
+    font-size: 3rem;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+
+  /* Font weights */
+  .font-light {
+    font-weight: 300;
+  }
+
+  .font-normal {
+    font-weight: 400;
+  }
+
+  .font-medium {
+    font-weight: 500;
+  }
+
+  .font-semibold {
+    font-weight: 600;
+  }
+
+  .font-bold {
+    font-weight: 700;
+  }
+
+  .font-extrabold {
+    font-weight: 800;
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   ::-webkit-scrollbar-thumb {
     background: linear-gradient(45deg, #667eea, #764ba2);
-    border-radius: 4px;
+    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -61,6 +200,9 @@ export const GlobalStyles = createGlobalStyle`
     background: none;
     cursor: pointer;
     font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0;
   }
 
   /* Input reset */
@@ -68,20 +210,26 @@ export const GlobalStyles = createGlobalStyle`
     font-family: inherit;
     border: none;
     outline: none;
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0;
   }
 
   /* Link reset */
   a {
     text-decoration: none;
     color: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0;
   }
 
   /* Glassmorphism effect */
   .glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
   }
 
   /* Gradient text */
@@ -96,10 +244,13 @@ export const GlobalStyles = createGlobalStyle`
   .gradient-button {
     background: linear-gradient(45deg, #667eea, #764ba2);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     color: white;
-    font-weight: 600;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.75rem 1.5rem;
     transition: all 0.3s ease;
+    letter-spacing: 0;
   }
 
   .gradient-button:hover {
@@ -146,8 +297,42 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   @media (max-width: 768px) {
+    body {
+      font-size: 13px;
+    }
+    
+    h1 {
+      font-size: 2rem;
+    }
+    
+    h2 {
+      font-size: 1.75rem;
+    }
+    
+    h3 {
+      font-size: 1.375rem;
+    }
+    
     .container {
       padding: 0 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    body {
+      font-size: 12px;
+    }
+    
+    h1 {
+      font-size: 1.75rem;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+    
+    h3 {
+      font-size: 1.25rem;
     }
   }
 `;

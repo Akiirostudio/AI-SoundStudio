@@ -23,55 +23,63 @@ const BackgroundPattern = styled.div`
   right: 0;
   bottom: 0;
   background-image: 
-    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(102, 126, 234, 0.04) 0%, transparent 50%);
   pointer-events: none;
 `;
 
 const HeroSection = styled(motion.div)`
-  max-width: 800px;
-  margin-bottom: 4rem;
+  max-width: 700px;
+  margin-bottom: 3rem;
   z-index: 1;
 `;
 
 const LargeLogo = styled(motion.img)`
-  width: 120px;
-  height: 75px;
+  width: 100px;
+  height: 62px;
   border-radius: 0;
-  margin: 0 auto 2rem;
+  margin: 0 auto 1.5rem;
   display: block;
 `;
 
 const MainTitle = styled(motion.h1)`
-  font-size: 3.5rem;
+  font-size: 2.75rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   background: linear-gradient(45deg, #667eea, #764ba2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
   
   @media (max-width: 768px) {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 2rem;
   }
 `;
 
 const Subtitle = styled(motion.p)`
-  font-size: 1.25rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 3rem;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 2.5rem;
   line-height: 1.6;
-  max-width: 600px;
+  max-width: 500px;
   margin-left: auto;
   margin-right: auto;
+  font-weight: 400;
+  letter-spacing: 0;
 `;
 
 const CTAButtons = styled(motion.div)`
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   justify-content: center;
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -82,60 +90,74 @@ const CTAButtons = styled(motion.div)`
 const PrimaryButton = styled(Link)`
   background: linear-gradient(45deg, #667eea, #764ba2);
   color: white;
-  padding: 1rem 2rem;
+  padding: 0.875rem 1.75rem;
   border-radius: 12px;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
   transition: all 0.3s ease;
+  letter-spacing: 0;
   
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
   }
 `;
 
 const SecondaryButton = styled(Link)`
   background: transparent;
   color: #667eea;
-  padding: 1rem 2rem;
-  border: 2px solid #667eea;
+  padding: 0.875rem 1.75rem;
+  border: 1px solid rgba(102, 126, 234, 0.3);
   border-radius: 12px;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
   transition: all 0.3s ease;
+  letter-spacing: 0;
   
   &:hover {
-    background: #667eea;
-    color: white;
-    transform: translateY(-3px);
+    background: rgba(102, 126, 234, 0.1);
+    border-color: rgba(102, 126, 234, 0.5);
+    transform: translateY(-2px);
   }
+`;
+
+const FeaturesSection = styled(motion.div)`
+  max-width: 1000px;
+  width: 100%;
+  z-index: 1;
 `;
 
 const SubmitSection = styled(motion.div)`
   max-width: 600px;
-  margin-bottom: 4rem;
+  width: 100%;
+  margin-top: 2rem;
   z-index: 1;
+  text-align: center;
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   color: white;
+  letter-spacing: -0.01em;
 `;
 
 const SectionSubtitle = styled.p`
-  font-size: 1rem;
+  font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
 `;
 
 const SubmitForm = styled.div`
   display: flex;
   gap: 1rem;
-  align-items: center;
+  margin-bottom: 1rem;
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -144,12 +166,14 @@ const SubmitForm = styled.div`
 
 const Input = styled.input`
   flex: 1;
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.875rem 1rem;
   background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   color: white;
-  font-size: 1rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0;
   
   &::placeholder {
     color: rgba(255, 255, 255, 0.5);
@@ -158,20 +182,21 @@ const Input = styled.input`
   &:focus {
     outline: none;
     border-color: #667eea;
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    background: rgba(255, 255, 255, 0.15);
   }
 `;
 
 const LoadButton = styled.button`
+  padding: 0.875rem 1.5rem;
   background: linear-gradient(45deg, #667eea, #764ba2);
   color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
   border: none;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0;
   
   &:hover:not(:disabled) {
     transform: translateY(-2px);
@@ -185,40 +210,62 @@ const LoadButton = styled.button`
   }
 `;
 
+const LoadingSpinner = styled.div`
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #667eea;
+  animation: spin 1s ease-in-out infinite;
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
 const FeatureCards = styled(motion.div)`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
   max-width: 1000px;
   width: 100%;
   z-index: 1;
+  margin-top: 2rem;
 `;
 
 const FeatureCard = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: left;
   transition: all 0.3s ease;
   
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.25);
   }
 `;
 
+
+
 const CardTitle = styled.h3`
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   color: white;
+  letter-spacing: -0.01em;
 `;
 
 const CardDescription = styled.p`
   color: rgba(255, 255, 255, 0.7);
-  line-height: 1.6;
+  line-height: 1.5;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0;
 `;
 
 function Home() {
