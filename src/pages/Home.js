@@ -14,6 +14,17 @@ const HomeContainer = styled.div`
   padding: 2rem;
   position: relative;
   overflow: hidden;
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem;
+    justify-content: flex-start;
+    padding-top: 6rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 1rem 0.75rem;
+    padding-top: 5rem;
+  }
 `;
 
 const BackgroundPattern = styled.div`
@@ -33,6 +44,14 @@ const HeroSection = styled(motion.div)`
   max-width: 700px;
   margin-bottom: 3rem;
   z-index: 1;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 2rem;
+  }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 1.5rem;
+  }
 `;
 
 const LargeLogo = styled(motion.img)`
@@ -41,6 +60,18 @@ const LargeLogo = styled(motion.img)`
   border-radius: 0;
   margin: 0 auto 1.5rem;
   display: block;
+  
+  @media (max-width: 768px) {
+    width: 80px;
+    height: 50px;
+    margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    width: 70px;
+    height: 44px;
+    margin-bottom: 0.75rem;
+  }
 `;
 
 const MainTitle = styled(motion.h1)`
@@ -56,10 +87,12 @@ const MainTitle = styled(motion.h1)`
   
   @media (max-width: 768px) {
     font-size: 2.25rem;
+    margin-bottom: 0.75rem;
   }
   
   @media (max-width: 480px) {
     font-size: 2rem;
+    margin-bottom: 0.5rem;
   }
 `;
 
@@ -73,6 +106,17 @@ const Subtitle = styled(motion.p)`
   margin-right: auto;
   font-weight: 400;
   letter-spacing: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+    max-width: 100%;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
 `;
 
 const CTAButtons = styled(motion.div)`
@@ -84,6 +128,13 @@ const CTAButtons = styled(motion.div)`
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
   }
 `;
 
@@ -97,10 +148,28 @@ const PrimaryButton = styled(Link)`
   font-size: 0.875rem;
   transition: all 0.3s ease;
   letter-spacing: 0;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+    min-height: 48px;
+    min-width: 200px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8rem;
+    min-width: 180px;
   }
 `;
 
@@ -115,11 +184,29 @@ const SecondaryButton = styled(Link)`
   font-size: 0.875rem;
   transition: all 0.3s ease;
   letter-spacing: 0;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
     background: rgba(102, 126, 234, 0.1);
     border-color: rgba(102, 126, 234, 0.5);
     transform: translateY(-2px);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+    min-height: 48px;
+    min-width: 200px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8rem;
+    min-width: 180px;
   }
 `;
 
@@ -135,6 +222,14 @@ const SubmitSection = styled(motion.div)`
   margin-top: 2rem;
   z-index: 1;
   text-align: center;
+  
+  @media (max-width: 768px) {
+    margin-top: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    margin-top: 1rem;
+  }
 `;
 
 const SectionTitle = styled.h2`
@@ -143,6 +238,15 @@ const SectionTitle = styled.h2`
   margin-bottom: 0.75rem;
   color: white;
   letter-spacing: -0.01em;
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.125rem;
+  }
 `;
 
 const SectionSubtitle = styled.p`
@@ -152,6 +256,16 @@ const SectionSubtitle = styled.p`
   line-height: 1.5;
   font-weight: 400;
   letter-spacing: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
 `;
 
 const SubmitForm = styled.div`
@@ -161,6 +275,11 @@ const SubmitForm = styled.div`
   
   @media (max-width: 768px) {
     flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.5rem;
   }
 `;
 
@@ -174,6 +293,7 @@ const Input = styled.input`
   font-size: 0.875rem;
   font-weight: 400;
   letter-spacing: 0;
+  min-height: 44px;
   
   &::placeholder {
     color: rgba(255, 255, 255, 0.5);
@@ -183,6 +303,16 @@ const Input = styled.input`
     outline: none;
     border-color: #667eea;
     background: rgba(255, 255, 255, 0.15);
+  }
+  
+  @media (max-width: 768px) {
+    min-height: 48px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem 0.875rem;
+    font-size: 16px;
   }
 `;
 
@@ -197,16 +327,33 @@ const LoadButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   letter-spacing: 0;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
-  &:hover:not(:disabled) {
+  &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
   }
   
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+  }
+  
+  @media (max-width: 768px) {
+    min-height: 48px;
+    min-width: 120px;
+    font-size: 0.875rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8rem;
+    min-width: 100px;
   }
 `;
 
@@ -232,6 +379,18 @@ const FeatureCards = styled(motion.div)`
   width: 100%;
   z-index: 1;
   margin-top: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
 `;
 
 const FeatureCard = styled.div`
@@ -248,6 +407,14 @@ const FeatureCard = styled.div`
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
     border-color: rgba(255, 255, 255, 0.25);
   }
+  
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
 `;
 
 
@@ -258,6 +425,15 @@ const CardTitle = styled.h3`
   margin-bottom: 0.75rem;
   color: white;
   letter-spacing: -0.01em;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.875rem;
+  }
 `;
 
 const CardDescription = styled.p`
@@ -266,6 +442,14 @@ const CardDescription = styled.p`
   font-size: 0.875rem;
   font-weight: 400;
   letter-spacing: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.75rem;
+  }
 `;
 
 function Home() {
@@ -374,7 +558,15 @@ function Home() {
               border: '1px solid rgba(255, 255, 255, 0.15)',
               borderRadius: '16px',
               maxWidth: '500px',
-              margin: '2rem auto 0'
+              margin: '2rem auto 0',
+              '@media (max-width: 768px)': {
+                padding: '1rem',
+                margin: '1.5rem auto 0'
+              },
+              '@media (max-width: 480px)': {
+                padding: '0.75rem',
+                margin: '1rem auto 0'
+              }
             }}
           >
             {/* Track Header */}
@@ -382,21 +574,63 @@ function Home() {
               display: 'flex', 
               alignItems: 'center', 
               gap: '1rem',
-              marginBottom: '1.5rem'
+              marginBottom: '1.5rem',
+              '@media (max-width: 480px)': {
+                flexDirection: 'column',
+                textAlign: 'center',
+                gap: '0.75rem',
+                marginBottom: '1rem'
+              }
             }}>
               <img 
                 src={trackInfo.album?.images?.[0]?.url} 
                 alt={trackInfo.name}
-                style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover' }}
+                style={{ 
+                  width: '80px', 
+                  height: '80px', 
+                  borderRadius: '12px', 
+                  objectFit: 'cover',
+                  '@media (max-width: 480px)': {
+                    width: '60px',
+                    height: '60px'
+                  }
+                }}
               />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: '600', color: 'white', marginBottom: '0.25rem', fontSize: '1.125rem' }}>
+              <div style={{ 
+                flex: 1,
+                '@media (max-width: 480px)': {
+                  flex: 'none',
+                  width: '100%'
+                }
+              }}>
+                <div style={{ 
+                  fontWeight: '600', 
+                  color: 'white', 
+                  marginBottom: '0.25rem', 
+                  fontSize: '1.125rem',
+                  '@media (max-width: 480px)': {
+                    fontSize: '1rem'
+                  }
+                }}>
                   {trackInfo.name}
                 </div>
-                <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '0.5rem' }}>
+                <div style={{ 
+                  fontSize: '0.875rem', 
+                  color: 'rgba(255, 255, 255, 0.7)', 
+                  marginBottom: '0.5rem',
+                  '@media (max-width: 480px)': {
+                    fontSize: '0.8rem'
+                  }
+                }}>
                   {trackInfo.artists?.map(a => a.name).join(', ')}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+                <div style={{ 
+                  fontSize: '0.75rem', 
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  '@media (max-width: 480px)': {
+                    fontSize: '0.7rem'
+                  }
+                }}>
                   {trackInfo.album?.name} • {trackInfo.album?.release_date?.split('-')[0]}
                 </div>
               </div>
@@ -407,7 +641,12 @@ function Home() {
               display: 'grid', 
               gridTemplateColumns: 'repeat(2, 1fr)', 
               gap: '1rem',
-              marginBottom: '1.5rem'
+              marginBottom: '1.5rem',
+              '@media (max-width: 480px)': {
+                gridTemplateColumns: '1fr',
+                gap: '0.75rem',
+                marginBottom: '1rem'
+              }
             }}>
               <div style={{ 
                 background: 'rgba(255, 255, 255, 0.05)', 
@@ -513,7 +752,18 @@ function Home() {
                 fontSize: '1rem',
                 fontWeight: '600',
                 textAlign: 'center',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                minHeight: '44px',
+                '@media (max-width: 768px)': {
+                  padding: '0.875rem',
+                  fontSize: '0.875rem',
+                  minHeight: '48px'
+                },
+                '@media (max-width: 480px)': {
+                  padding: '0.75rem',
+                  fontSize: '0.8rem',
+                  minHeight: '44px'
+                }
               }}
               onMouseEnter={(e) => {
                 e.target.style.transform = 'translateY(-2px)';

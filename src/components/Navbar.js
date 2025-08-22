@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
-import { FaCog, FaSignOutAlt, FaTrash, FaUser, FaEnvelope } from 'react-icons/fa';
+import { FaCog, FaSignOutAlt, FaTrash, FaUser, FaEnvelope, FaBars, FaTimes } from 'react-icons/fa';
 
 const Nav = styled.nav`
   display: flex;
@@ -15,6 +15,11 @@ const Nav = styled.nav`
   position: sticky;
   top: 0;
   z-index: 1000;
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+    z-index: 999999;
+  }
 `;
 
 const Logo = styled.div`
@@ -31,18 +36,45 @@ const Logo = styled.div`
   &:hover {
     opacity: 0.8;
   }
+  
+  @media (max-width: 480px) {
+    font-size: 1.125rem;
+    gap: 0.375rem;
+  }
 `;
 
 const LogoIcon = styled.img`
   width: 28px;
   height: 18px;
   border-radius: 0;
+  
+  @media (max-width: 480px) {
+    width: 24px;
+    height: 16px;
+  }
 `;
 
 const NavLinks = styled.div`
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: ${props => props.isOpen ? 'rgba(0, 0, 0, 0.9)' : 'transparent'};
+    display: ${props => props.isOpen ? 'flex' : 'none'};
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-end;
+    gap: 1rem;
+    padding-top: 6rem;
+    padding-right: 2rem;
+    z-index: 999999;
+  }
 `;
 
 const NavLink = styled(Link)`
@@ -53,6 +85,11 @@ const NavLink = styled(Link)`
   transition: color 0.3s ease;
   position: relative;
   letter-spacing: 0;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
     color: #667eea;
@@ -70,6 +107,30 @@ const NavLink = styled(Link)`
       border-radius: 1px;
     }
   `}
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    font-weight: 500;
+    min-height: 50px;
+    min-width: 200px;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 0.5rem;
+    text-align: center;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    ${props => props.active && `
+      &::after {
+        display: none;
+      }
+      background: rgba(102, 126, 234, 0.2);
+    `}
+  }
 `;
 
 const LoginButton = styled(Link)`
@@ -82,10 +143,21 @@ const LoginButton = styled(Link)`
   font-size: 0.875rem;
   transition: all 0.3s ease;
   letter-spacing: 0;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    min-height: 48px;
   }
 `;
 
@@ -107,10 +179,53 @@ const SettingsButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
   
   &:hover {
     background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.25);
+  }
+  
+  @media (max-width: 768px) {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 0.75rem;
+  }
+`;
+
+const MobileMenuButton = styled.button`
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  padding: 0.625rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  position: relative;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+  }
+  
+  @media (max-width: 768px) {
+    display: flex;
+    min-height: 48px;
+    min-width: 48px;
+    padding: 0.75rem;
+    z-index: 999999;
+    
+    svg {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: ${props => props.isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
+    }
   }
 `;
 
@@ -127,12 +242,29 @@ const SettingsDropdown = styled.div`
   min-width: 200px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   z-index: 1001;
+  
+  @media (max-width: 768px) {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    border-radius: 12px 12px 0 0;
+    min-width: auto;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
 `;
 
 const UserInfo = styled.div`
   padding: 0.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 0.5rem;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const UserName = styled.div`
@@ -141,6 +273,10 @@ const UserName = styled.div`
   color: white;
   margin-bottom: 0.25rem;
   letter-spacing: -0.005em;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const UserEmail = styled.div`
@@ -148,6 +284,10 @@ const UserEmail = styled.div`
   color: rgba(255, 255, 255, 0.6);
   font-weight: 400;
   letter-spacing: 0;
+  
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+  }
 `;
 
 const DropdownItem = styled.button`
@@ -165,6 +305,7 @@ const DropdownItem = styled.button`
   border-radius: 8px;
   transition: all 0.2s ease;
   letter-spacing: 0;
+  min-height: 44px;
   
   &:hover {
     background: rgba(255, 255, 255, 0.1);
@@ -177,11 +318,21 @@ const DropdownItem = styled.button`
       background: rgba(255, 107, 107, 0.1);
     }
   }
+  
+  @media (max-width: 768px) {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    min-height: 56px;
+  }
 `;
 
 const DropdownIcon = styled.div`
   font-size: 0.875rem;
   opacity: 0.7;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const DeleteConfirmModal = styled.div`
@@ -195,6 +346,7 @@ const DeleteConfirmModal = styled.div`
   align-items: center;
   justify-content: center;
   z-index: 1002;
+  padding: 1rem;
 `;
 
 const ModalContent = styled.div`
@@ -204,26 +356,43 @@ const ModalContent = styled.div`
   border-radius: 12px;
   padding: 2rem;
   max-width: 400px;
-  width: 90%;
+  width: 100%;
   text-align: center;
+  
+  @media (max-width: 480px) {
+    padding: 1.5rem;
+  }
 `;
 
 const ModalTitle = styled.h3`
   color: white;
   margin-bottom: 1rem;
   font-size: 1.2rem;
+  
+  @media (max-width: 480px) {
+    font-size: 1.1rem;
+  }
 `;
 
 const ModalText = styled.p`
   color: rgba(255, 255, 255, 0.7);
   margin-bottom: 1.5rem;
   line-height: 1.5;
+  
+  @media (max-width: 480px) {
+    font-size: 0.875rem;
+  }
 `;
 
 const ModalButtons = styled.div`
   display: flex;
   gap: 1rem;
   justify-content: center;
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 `;
 
 const ModalButton = styled.button`
@@ -233,6 +402,8 @@ const ModalButton = styled.button`
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
+  min-height: 44px;
+  min-width: 44px;
   
   &.cancel {
     background: rgba(255, 255, 255, 0.1);
@@ -252,6 +423,11 @@ const ModalButton = styled.button`
       background: #ff5252;
     }
   }
+  
+  @media (max-width: 480px) {
+    padding: 0.875rem 1.5rem;
+    min-height: 48px;
+  }
 `;
 
 function Navbar() {
@@ -261,6 +437,7 @@ function Navbar() {
   const [showSettings, setShowSettings] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const settingsRef = useRef(null);
 
   useEffect(() => {
@@ -275,6 +452,11 @@ function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -305,6 +487,12 @@ function Navbar() {
     navigate('/');
   };
 
+  const toggleMobileMenu = () => {
+    const newState = !isMobileMenuOpen;
+    console.log('Mobile menu toggled:', newState);
+    setIsMobileMenuOpen(newState);
+  };
+
   return (
     <Nav>
       <Logo onClick={handleLogoClick}>
@@ -312,12 +500,12 @@ function Navbar() {
         Vibesona
       </Logo>
       
-      <NavLinks>
-        <NavLink to="/">Home</NavLink>
-        <NavLink to="/analyzer">Playlist Analyzer</NavLink>
-        <NavLink to="/submissions">Submissions</NavLink>
-        <NavLink to="/playlists">Playlists</NavLink>
-        <NavLink to="/pricing">Pricing</NavLink>
+      <NavLinks isOpen={isMobileMenuOpen}>
+        <NavLink to="/" active={location.pathname === '/'}>Home</NavLink>
+        <NavLink to="/analyzer" active={location.pathname === '/analyzer'}>Playlist Analyzer</NavLink>
+        <NavLink to="/submissions" active={location.pathname === '/submissions'}>Submissions</NavLink>
+        <NavLink to="/playlists" active={location.pathname === '/playlists'}>Playlists</NavLink>
+        <NavLink to="/pricing" active={location.pathname === '/pricing'}>Pricing</NavLink>
       </NavLinks>
       
       <UserSection ref={settingsRef}>
@@ -357,6 +545,10 @@ function Navbar() {
             Login
           </LoginButton>
         )}
+        
+        <MobileMenuButton onClick={toggleMobileMenu} isOpen={isMobileMenuOpen}>
+          {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+        </MobileMenuButton>
       </UserSection>
 
       {showDeleteConfirm && (

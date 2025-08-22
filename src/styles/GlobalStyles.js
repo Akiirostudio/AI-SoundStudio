@@ -21,6 +21,21 @@ export const GlobalStyles = createGlobalStyle`
     font-size: 14px;
     line-height: 1.5;
     letter-spacing: -0.01em;
+    /* Mobile touch improvements */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Enable text selection for specific elements */
+  p, h1, h2, h3, h4, h5, h6, span, div {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
   }
 
   .App {
@@ -203,6 +218,10 @@ export const GlobalStyles = createGlobalStyle`
     font-size: 0.875rem;
     font-weight: 500;
     letter-spacing: 0;
+    /* Mobile touch improvements */
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
   }
 
   /* Input reset */
@@ -213,6 +232,11 @@ export const GlobalStyles = createGlobalStyle`
     font-size: 0.875rem;
     font-weight: 400;
     letter-spacing: 0;
+    /* Mobile input improvements */
+    -webkit-appearance: none;
+    border-radius: 0;
+    min-height: 44px;
+    touch-action: manipulation;
   }
 
   /* Link reset */
@@ -222,6 +246,13 @@ export const GlobalStyles = createGlobalStyle`
     font-size: 0.875rem;
     font-weight: 500;
     letter-spacing: 0;
+    /* Mobile touch improvements */
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
   }
 
   /* Glassmorphism effect */
@@ -251,6 +282,9 @@ export const GlobalStyles = createGlobalStyle`
     padding: 0.75rem 1.5rem;
     transition: all 0.3s ease;
     letter-spacing: 0;
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
   }
 
   .gradient-button:hover {
@@ -296,6 +330,13 @@ export const GlobalStyles = createGlobalStyle`
     padding: 0 20px;
   }
 
+  /* Mobile-first responsive design */
+  @media (max-width: 1024px) {
+    .container {
+      padding: 0 16px;
+    }
+  }
+
   @media (max-width: 768px) {
     body {
       font-size: 13px;
@@ -303,18 +344,42 @@ export const GlobalStyles = createGlobalStyle`
     
     h1 {
       font-size: 2rem;
+      line-height: 1.2;
     }
     
     h2 {
       font-size: 1.75rem;
+      line-height: 1.3;
     }
     
     h3 {
       font-size: 1.375rem;
+      line-height: 1.4;
+    }
+    
+    h4 {
+      font-size: 1.125rem;
+      line-height: 1.4;
     }
     
     .container {
       padding: 0 16px;
+    }
+
+    /* Mobile-specific improvements */
+    button, a {
+      min-height: 48px;
+      min-width: 48px;
+    }
+
+    input, textarea, select {
+      min-height: 48px;
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Mobile scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
     }
   }
 
@@ -325,14 +390,88 @@ export const GlobalStyles = createGlobalStyle`
     
     h1 {
       font-size: 1.75rem;
+      line-height: 1.3;
     }
     
     h2 {
       font-size: 1.5rem;
+      line-height: 1.4;
     }
     
     h3 {
       font-size: 1.25rem;
+      line-height: 1.4;
+    }
+
+    h4 {
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    
+    .container {
+      padding: 0 12px;
+    }
+
+    /* Small mobile improvements */
+    button, a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    input, textarea, select {
+      min-height: 44px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    body {
+      font-size: 11px;
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+    }
+    
+    h2 {
+      font-size: 1.25rem;
+    }
+    
+    h3 {
+      font-size: 1.125rem;
+    }
+    
+    .container {
+      padding: 0 8px;
+    }
+  }
+
+  /* Landscape mobile optimizations */
+  @media (max-height: 500px) and (orientation: landscape) {
+    body {
+      font-size: 12px;
+    }
+    
+    .container {
+      padding: 0 12px;
+    }
+  }
+
+  /* High DPI displays */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Ensure crisp rendering on retina displays */
+  }
+
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    /* Already optimized for dark mode */
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
   }
 `;
