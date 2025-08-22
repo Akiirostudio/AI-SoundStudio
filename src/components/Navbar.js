@@ -501,7 +501,6 @@ function Navbar() {
       </Logo>
       
       <NavLinks isOpen={isMobileMenuOpen}>
-        <NavLink to="/" active={location.pathname === '/'}>Home</NavLink>
         <NavLink to="/analyzer" active={location.pathname === '/analyzer'}>Playlist Analyzer</NavLink>
         <NavLink to="/submissions" active={location.pathname === '/submissions'}>Submissions</NavLink>
         <NavLink to="/playlists" active={location.pathname === '/playlists'}>Playlists</NavLink>
