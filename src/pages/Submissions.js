@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaMusic, FaUpload, FaSearch, FaUsers, FaPlay, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaMusic, FaUpload, FaSearch, FaUsers, FaPlay, FaExternalLinkAlt, FaLock, FaUser } from 'react-icons/fa';
 import ReactDOM from 'react-dom';
 import SpotifyService from '../services/spotify';
 import userDataService from '../services/userData';
+import searchLimitService from '../services/searchLimit';
 import { useAuth } from '../contexts/AuthContext';
 
 const SubmissionsContainer = styled.div`
@@ -506,9 +507,10 @@ const SubmissionStatus = styled.div`
 
 function Submissions() {
   const { currentUser } = useAuth();
+  const location = useLocation();
   const [songUrl, setSongUrl] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('Pop');
-  const [trackInfo, setTrackInfo] = useState(null);
+  const [trackInfo, setTrackInfo] = useState(location.state?.trackInfo || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [playlists, setPlaylists] = useState([]);
@@ -518,6 +520,8 @@ function Submissions() {
   const [submissions, setSubmissions] = useState([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [searchLimitInfo, setSearchLimitInfo] = useState(null);
+  const [limitLoading, setLimitLoading] = useState(true);
 
   // Load user's submissions from Firestore
   useEffect(() => {
@@ -547,6 +551,29 @@ function Submissions() {
 
     loadUserSubmissions();
   }, [currentUser]);
+
+  // Load search limit info on component mount
+  useEffect(() => {
+    const loadSearchLimitInfo = async () => {
+      try {
+        const info = await searchLimitService.getSearchLimitInfo(currentUser?.uid);
+        setSearchLimitInfo(info);
+      } catch (error) {
+        console.error('Error loading search limit info:', error);
+      } finally {
+        setLimitLoading(false);
+      }
+    };
+
+    loadSearchLimitInfo();
+  }, [currentUser]);
+
+  // Show success message if track info was passed from home page
+  useEffect(() => {
+    if (location.state?.trackInfo) {
+      setError(''); // Clear any existing errors
+    }
+  }, [location.state?.trackInfo]);
 
   // Debug: Test Firestore connection on component mount
   useEffect(() => {
@@ -608,9 +635,26 @@ function Submissions() {
       return;
     }
 
+    // Check search limits for non-authenticated users
+    if (!currentUser) {
+      const canSearch = await searchLimitService.canSearch();
+      if (!canSearch.canSearch) {
+        setError(`You've reached the limit of 3 searches. Please sign up for unlimited access!`);
+        return;
+      }
+    }
+
     setLoading(true);
     setError('');
     setTrackInfo(null);
+
+    // Record the search attempt immediately when user clicks Load Track
+    if (!currentUser) {
+      await searchLimitService.recordSearch(currentUser?.uid);
+      // Update search limit info immediately
+      const updatedInfo = await searchLimitService.getSearchLimitInfo(currentUser?.uid);
+      setSearchLimitInfo(updatedInfo);
+    }
 
     try {
       const trackData = await SpotifyService.getTrackInfo(songUrl);
@@ -685,7 +729,7 @@ function Submissions() {
     }
 
     if (!currentUser) {
-      setError('Please log in to submit to playlists');
+      setError('You need to sign up and choose a package to submit to playlists. Please visit our pricing page to get started!');
       return;
     }
 
@@ -791,6 +835,77 @@ function Submissions() {
         <Title>Submissions Dashboard</Title>
         <Subtitle>Track your music submissions and discover new playlists.</Subtitle>
       </Header>
+
+      {/* Search Limit Banner */}
+      {!limitLoading && searchLimitInfo && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '12px',
+            padding: '1rem',
+            marginBottom: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            maxWidth: '1200px',
+            margin: '0 auto 2rem'
+          }}
+        >
+          {currentUser ? (
+            <div style={{
+              background: 'linear-gradient(45deg, #4CAF50, #45a049)',
+              color: 'white',
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <FaUser />
+              Unlimited Searches
+            </div>
+          ) : (
+            <>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: '0.875rem'
+              }}>
+                <FaLock />
+                Searches remaining: 
+                <span style={{
+                  color: searchLimitInfo.remainingSearches <= 1 ? '#ff6b6b' : '#4CAF50',
+                  fontWeight: '600'
+                }}>
+                  {searchLimitInfo.remainingSearches} / {searchLimitInfo.maxSearches}
+                </span>
+              </div>
+              <Link to="/signup" style={{
+                background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                color: 'white',
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                transition: 'all 0.3s ease'
+              }}>
+                Sign Up for Unlimited
+              </Link>
+            </>
+          )}
+        </motion.div>
+      )}
 
       <DashboardGrid>
         <DashboardCard
@@ -904,6 +1019,36 @@ function Submissions() {
                     left={dropdownPosition.left}
                     width={dropdownPosition.width}
                   >
+                  {!currentUser && (
+                    <div style={{
+                      background: 'linear-gradient(45deg, #667eea, #764ba2)',
+                      color: 'white',
+                      padding: '1rem',
+                      marginBottom: '1rem',
+                      borderRadius: '8px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                        🔒 Sign Up Required
+                      </div>
+                      <div style={{ fontSize: '0.875rem', marginBottom: '1rem', opacity: 0.9 }}>
+                        You need to sign up and choose a package to submit to playlists
+                      </div>
+                      <Link to="/pricing" style={{
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        transition: 'all 0.3s ease'
+                      }}>
+                        View Pricing Plans
+                      </Link>
+                    </div>
+                  )}
+                  
                   {searchingPlaylists ? (
                     <NoPlaylistsMessage>
                       <LoadingSpinner />
@@ -938,12 +1083,21 @@ function Submissions() {
                         </PlaylistStats>
                         <SubmitButton
                           onClick={() => handleSubmitToPlaylist(playlist)}
-                          disabled={submittingToPlaylist === playlist.id || !trackInfo}
+                          disabled={submittingToPlaylist === playlist.id || !trackInfo || !currentUser}
+                          style={{
+                            opacity: !currentUser ? 0.5 : 1,
+                            cursor: !currentUser ? 'not-allowed' : 'pointer'
+                          }}
                         >
                           {submittingToPlaylist === playlist.id ? (
                             <>
                               <LoadingSpinner />
                               Submitting...
+                            </>
+                          ) : !currentUser ? (
+                            <>
+                              <FaLock />
+                              Sign Up Required
                             </>
                           ) : (
                             <>

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaExclamationTriangle, FaChartBar, FaArrowUp, FaArrowDown, FaRobot, FaShieldAlt, FaSearch, FaStar, FaUserFriends } from 'react-icons/fa';
+import { FaExclamationTriangle, FaChartBar, FaArrowUp, FaArrowDown, FaRobot, FaShieldAlt, FaSearch, FaStar, FaUserFriends, FaLock, FaUser } from 'react-icons/fa';
 import SpotifyService from '../services/spotify';
+import searchLimitService from '../services/searchLimit';
+import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const AnalyzerContainer = styled.div`
   min-height: 100vh;
@@ -198,6 +201,60 @@ const LoadingSpinner = styled.div`
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+`;
+
+const SearchLimitBanner = styled.div`
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+`;
+
+const SearchLimitInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+`;
+
+const SearchLimitCount = styled.span`
+  color: ${props => props.warning ? '#ff6b6b' : '#4CAF50'};
+  font-weight: 600;
+`;
+
+const SignUpButton = styled(Link)`
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  }
+`;
+
+const UnlimitedBadge = styled.div`
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 const ErrorMessage = styled.div`
@@ -620,6 +677,35 @@ function Analyzer() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+  const [searchLimitInfo, setSearchLimitInfo] = useState(null);
+  const [limitLoading, setLimitLoading] = useState(true);
+  const { currentUser } = useAuth();
+
+  // Load search limit info on component mount only once
+  useEffect(() => {
+    const loadSearchLimitInfo = async () => {
+      try {
+        const info = await searchLimitService.getSearchLimitInfo(currentUser?.uid);
+        setSearchLimitInfo(info);
+      } catch (error) {
+        console.error('Error loading search limit info:', error);
+        // Set default info if there's an error
+        setSearchLimitInfo({
+          isAuthenticated: false,
+          remainingSearches: 3,
+          totalSearches: 0,
+          maxSearches: 3
+        });
+      } finally {
+        setLimitLoading(false);
+      }
+    };
+
+    // Only load once when component mounts or user changes
+    if (!searchLimitInfo) {
+      loadSearchLimitInfo();
+    }
+  }, [currentUser, searchLimitInfo]);
 
   const generateChartPath = (growthData) => {
     if (!growthData || growthData.length === 0) return '';
@@ -641,6 +727,31 @@ function Analyzer() {
     if (!playlistUrl.trim()) {
       setError('Please enter a playlist URL');
       return;
+    }
+
+    // For non-authenticated users, check and decrement search count
+    if (!currentUser) {
+      if (!searchLimitInfo || searchLimitInfo.remainingSearches <= 0) {
+        setError(`You've reached the limit of 3 searches. Please sign up for unlimited access!`);
+        return;
+      }
+      
+      // Decrement the count immediately
+      const newRemainingSearches = searchLimitInfo.remainingSearches - 1;
+      setSearchLimitInfo(prev => ({
+        ...prev,
+        remainingSearches: newRemainingSearches,
+        totalSearches: prev.totalSearches + 1
+      }));
+      
+      // Record the search in the background
+      searchLimitService.recordSearch(currentUser?.uid);
+      
+      // If this was the last search, show error and return
+      if (newRemainingSearches <= 0) {
+        setError(`You've reached the limit of 3 searches. Please sign up for unlimited access!`);
+        return;
+      }
     }
 
     setLoading(true);
@@ -676,6 +787,31 @@ function Analyzer() {
       >
         <Title>Playlist Analyzer</Title>
         
+        {/* Search Limit Banner */}
+        {!limitLoading && (
+          <SearchLimitBanner>
+            {currentUser ? (
+              <UnlimitedBadge>
+                <FaUser />
+                Unlimited Searches
+              </UnlimitedBadge>
+            ) : (
+              <>
+                <SearchLimitInfo>
+                  <FaLock />
+                  Searches remaining: 
+                  <SearchLimitCount warning={searchLimitInfo?.remainingSearches <= 1}>
+                    {searchLimitInfo?.remainingSearches || 3} / {searchLimitInfo?.maxSearches || 3}
+                  </SearchLimitCount>
+                </SearchLimitInfo>
+                <SignUpButton to="/signup">
+                  Sign Up for Unlimited
+                </SignUpButton>
+              </>
+            )}
+          </SearchLimitBanner>
+        )}
+        
         <InputContainer>
           <Input
             type="text"
@@ -688,7 +824,7 @@ function Analyzer() {
         
         <AnalyzeButton
           onClick={handleAnalyze}
-          disabled={loading}
+          disabled={loading || (!currentUser && searchLimitInfo?.remainingSearches <= 0)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -701,6 +837,8 @@ function Analyzer() {
             'Analyze'
           )}
         </AnalyzeButton>
+
+
 
         {error && (
           <ErrorMessage>
